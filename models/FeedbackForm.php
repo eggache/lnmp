@@ -8,7 +8,10 @@ class FeedbackForm extends Model
     public $orderid;
     public $userid;
     public $dealid;
+    public $poiid;
+    public $score;
     public $comment;
+    public $has_pic;
     public $picids;
 
     public function rules()

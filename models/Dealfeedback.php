@@ -3,9 +3,6 @@
 namespace app\models;
 
 use Yii;
-use app\models\Feedbackcomment;
-use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "dealfeedback".
@@ -30,15 +27,26 @@ use yii\db\ActiveRecord;
  */
 class Dealfeedback extends \yii\db\ActiveRecord
 {
+    static $feedback = [
+        'userid',
+        'dealid',
+        'orderid',
+        'poiid',
+        'score',
+    ];
+
+    static $bizreply = [
+        'userid',
+        'dealid',
+        'orderid',
+        'poiid',
+        'score',
+        'weight',
+        'bizacctid',
+    ];
     /**
      * @inheritdoc
      */
-
-    public static $tableKey = [
-        'userid'    => 'userid',
-        'dealid'    => 'dealid',
-        'orderid'   => 'orderid',
-    ];
     public static function tableName()
     {
         return 'dealfeedback';
@@ -83,27 +91,24 @@ class Dealfeedback extends \yii\db\ActiveRecord
 
     public static function add($arr)
     {
-        $comment = new Feedbackcomment;
-        $comment->comment = $arr['comment'];
-        $comment->insert();
+        var_dump($arr);exit;
+        foreach (self::$feedback as $key) {
+            if (isset($arr[$key])) {
+                return ;
+            }
+        }
+        if (isset($arr['comment'])) {
+            return ;
+        }
         $obj = new self;
-        foreach (self::$tableKey as $index) {
+        $key = self::$key;
+        foreach (self::$feedback as $index) {
             $obj->$index = $arr[$index];
         }
+        $comment = new Feedbackcomment;
+        $comment->comment = $arr['comment'];
+        $comment->save();
+        FeedbackController::computeFeedbackWeight($obj->userid, $obj->orderid, $obj->dealid, $obj->poiid, $comment, $arr['has_pic']);
         $obj->save();
-        return $obj->id;
-    }
-
-    public function behaviors()
-    {
-        return [
-            'timestamp' => [
-                'class'      => TimestampBehavior::className(),
-                'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['addtime', 'modtime'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => ['modtime'],
-                ],
-            ],
-        ];
     }
 }
