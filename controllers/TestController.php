@@ -19,4 +19,12 @@ class TestController extends Controller
     {
         Yii::$app->redis->flushall();//删除redis中的所有数据
     }
+
+    public function actionTestredis()
+    {
+        Yii::$app->redis->zadd('test', 1, 1);
+        $ret = Yii::$app->redis->zrange('test', 0, -1);
+        var_dump($ret);exit;
+
+    }
 }

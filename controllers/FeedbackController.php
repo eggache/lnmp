@@ -18,7 +18,7 @@ class FeedbackController extends Controller
             $feedback = $request->post()['FeedbackForm'];
             //$picids = PicfeedbackController::storeImage();
             $feedbackid = Dealfeedback::add($feedback);
-            var_dump($id);exit;
+            var_dump("insert is ok");exit;
         } else {
             return $this->render('feedback', [
                 'feedback'  => $feedback,

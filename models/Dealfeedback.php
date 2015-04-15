@@ -5,6 +5,7 @@ namespace app\models;
 use Yii;
 use app\controllers\DealFeedbackController;
 use app\controllers\TextCheckController;
+use app\models\Feedbackcomment;
 
 /**
  * This is the model class for table "dealfeedback".
@@ -54,16 +55,6 @@ class Dealfeedback extends \yii\db\ActiveRecord
         return 'dealfeedback';
     }
 
-    public function __construct($id = 0)
-    {
-        if ($id) {
-            $feedbak = self::find()->where(['id' => $id])->one();
-            $this = &$feedback;
-        } else {
-            $this = new self;
-        }
-    }
-
     /**
      * @inheritdoc
      */
@@ -101,6 +92,11 @@ class Dealfeedback extends \yii\db\ActiveRecord
         ];
     }
 
+    public function needManCheck()
+    {
+        return true;
+    }
+
     public static function add($arr)
     {
         foreach (self::$feedback as $key) {
@@ -116,7 +112,7 @@ class Dealfeedback extends \yii\db\ActiveRecord
             $obj->$index = $arr[$index];
         }
         $comment = new Feedbackcomment;
-        $comment->comment = iconv("UTF-8", "gb2312", $arr['comment']);
+        $comment->comment = $arr['comment'];
         $comment->save();
         $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->orderid, $obj->dealid, $obj->poiid, $comment->comment, $arr['has_pic']);
         $obj->weight = $weight[0];
@@ -124,6 +120,12 @@ class Dealfeedback extends \yii\db\ActiveRecord
 
         $controller = TextCheckController::getInstance('check');
         $controller->pushForCheck($obj->id, 0);
-        exit;
     }
+
+    public static function getDealFeedbackById($id)
+    {
+        $dealfeedback = Dealfeedback::find()->where(['id' => $id])->one();
+        return $dealfeedback;
+    }
+
 }
