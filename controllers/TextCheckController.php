@@ -6,11 +6,21 @@ use yii\web\Controller;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
+use app\models\FeedbackCommentToCheck;
 
 class TextCheckController extends Controller
 {
     public $redis;
     public $key;
+    const TYPE_DEALFEEDBACK_COMMENT = 0;
+
+    public $config = [
+        self::TYPE_DEALFEEDBACK_COMMENT     => [
+                                                    'checkModel'    => 'app\models\FeedbackCommentToCheck',
+                                                ],
+    ];
+
+    public static $preConfig;
 
     public static function getInstance($config = 'check')
     {
@@ -40,16 +50,23 @@ class TextCheckController extends Controller
         list($redis, $key) = $this->getPreset();
         $redis->multi();
         $redis->zrange($key, 0, $row);
-        $redis->ZREMRANGEBYRANK($key, 0, $row);
+        //$redis->ZREMRANGEBYRANK($key, 0, $row);
         $ret = $redis->exec();
-        return $ret;
+        return $ret[0];
     }
 
     public function getListForCheck($status, $row = 20)
     {
         $ids = $this->getFromCheckQueue($status, $row);
+        $checkIds = [];
         foreach ($ids as $id) {
-               
+            $tocheck = new FeedbackCommentToCheck($id);
+            if ($tocheck->needManCheck()) {
+                $tocheck->putToRecycle($status);
+                $checkIds[] = $id;
+            }
         }
+        call_user_func($modelName, $prepareFunc);
+        return $checkIds;
     }
 }
