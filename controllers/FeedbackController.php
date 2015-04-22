@@ -6,6 +6,8 @@ use yii\web\Controller;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
+use app\models\Coupon;
+use app\models\Deal;
 
 class FeedbackController extends Controller
 {
@@ -31,6 +33,12 @@ class FeedbackController extends Controller
                 'userid'    => $userid,
             ]);
         }
+    }
+
+    public function actionFeedbacklist()
+    {
+        $deal = Deal::find()->where()->all();
+        var_dump($deal);exit;
     }
 
 }
