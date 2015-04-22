@@ -27,3 +27,4 @@ phpunit.phar
 /phpunit.xml
 #config db connection
 config/db.php
+config/web.php
