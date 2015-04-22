@@ -12,7 +12,6 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $userid
  * @property integer $dealid
  * @property string $orderid
- * @property integer $poiid
  * @property integer $category
  * @property string $url
  * @property string $imagepath
@@ -39,7 +38,7 @@ class Picfeedback extends \yii\db\ActiveRecord
     {
         return [
             [['userid', 'dealid', 'orderid', 'category'], 'required'],
-            [['userid', 'dealid', 'orderid', 'poiid', 'category', 'addtime', 'modtime', 'attributes', 'status'], 'integer'],
+            [['userid', 'dealid', 'orderid', 'category', 'addtime', 'modtime', 'attributes', 'status'], 'integer'],
             [['url', 'imagepath', 'title'], 'string', 'max' => 512]
         ];
     }
@@ -54,7 +53,6 @@ class Picfeedback extends \yii\db\ActiveRecord
             'userid' => 'Userid',
             'dealid' => 'Dealid',
             'orderid' => 'Orderid',
-            'poiid' => 'Poiid',
             'category' => 'Category',
             'url' => 'Url',
             'imagepath' => 'Imagepath',

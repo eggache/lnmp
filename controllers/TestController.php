@@ -28,4 +28,16 @@ class TestController extends Controller
         var_dump($ret);exit;
 
     }
+
+    public function actionQueue()
+    {
+        $controller = QueueController::getInstance(0);
+        $controller->getFormQueue();
+    }
+
+    public function actionPushqueue()
+    {
+        $controller = QueueController::getInstance(0);
+        $controller->pushToQueue(1);
+    }
 }
