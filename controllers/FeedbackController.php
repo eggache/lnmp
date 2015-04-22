@@ -37,8 +37,9 @@ class FeedbackController extends Controller
 
     public function actionFeedbacklist()
     {
-        $deal = Deal::find()->where([])->all();
-        var_dump(count($deal));exit;
+        $dealid = 1;
+        $deal = Deal::find()->where(['id' => $dealid])->all();
+        var_dump($deal);exit;
     }
 
 }
