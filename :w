@@ -12,23 +12,20 @@ class FeedbackController extends Controller
     public function actionFeedback()
     {
         $request = Yii::$app->request;
+        $orderid = $request->get('orderid', 0);
+        $dealid = $request->get('dealid', 0);
+        $userid = $request->get('userid', 10);
         $feedback = new FeedbackForm;
         $picform = new PicForm;
         if ($request->isPost) {
             $feedback = $request->post()['FeedbackForm'];
-            //$picids = PicfeedbackController::storeImage();
+            $picids = PicfeedbackController::storeImage();
             $feedbackid = Dealfeedback::add($feedback);
             var_dump("insert is ok");exit;
         } else {
-            $orderid = $request->get('orderid', 0);
-            $dealid = $request->get('dealid', 0);
-            $userid = $request->get('userid', 0);
             return $this->render('feedback', [
                 'feedback'  => $feedback,
                 'picform'   => $picform,
-                'orderid'   => $orderid,
-                'dealid'    => $dealid,
-                'userid'    => $userid,
             ]);
         }
     }

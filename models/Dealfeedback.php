@@ -14,7 +14,6 @@ use app\models\Feedbackcomment;
  * @property integer $userid
  * @property integer $dealid
  * @property string $orderid
- * @property integer $poiid
  * @property integer $score
  * @property integer $weight
  * @property integer $bizacctid
@@ -34,7 +33,6 @@ class Dealfeedback extends \yii\db\ActiveRecord
         'userid',
         'dealid',
         'orderid',
-        'poiid',
         'score',
     ];
 
@@ -42,7 +40,6 @@ class Dealfeedback extends \yii\db\ActiveRecord
         'userid',
         'dealid',
         'orderid',
-        'poiid',
         'score',
         'weight',
         'bizacctid',
@@ -62,7 +59,7 @@ class Dealfeedback extends \yii\db\ActiveRecord
     {
         return [
             [['userid', 'dealid', 'orderid'], 'required'],
-            [['userid', 'dealid', 'orderid', 'poiid', 'score', 'weight', 'bizacctid', 'addtime', 'apdaddtime', 'replytime', 'apdreplytime', 'modtime', 'attributes', 'status', 'commentid', 'replyid'], 'integer']
+            [['userid', 'dealid', 'orderid', 'score', 'weight', 'bizacctid', 'addtime', 'apdaddtime', 'replytime', 'apdreplytime', 'modtime', 'attributes', 'status', 'commentid', 'replyid'], 'integer']
         ];
     }
 
@@ -76,7 +73,6 @@ class Dealfeedback extends \yii\db\ActiveRecord
             'userid' => 'Userid',
             'dealid' => 'Dealid',
             'orderid' => 'Orderid',
-            'poiid' => 'Poiid',
             'score' => 'Score',
             'weight' => 'Weight',
             'bizacctid' => 'Bizacctid',
@@ -114,7 +110,7 @@ class Dealfeedback extends \yii\db\ActiveRecord
         $comment = new Feedbackcomment;
         $comment->comment = $arr['comment'];
         $comment->save();
-        $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->orderid, $obj->dealid, $obj->poiid, $comment->comment, $arr['has_pic']);
+        $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->orderid, $obj->dealid, $comment->comment, $arr['has_pic']);
         $obj->weight = $weight[0];
         $obj->save();
 
