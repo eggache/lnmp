@@ -2,40 +2,55 @@
 namespace app\controllers;
 
 use Yii;
+use yii\base\Exception;
 use yii\web\Controller;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\FeedbackCommentToCheck;
+use app\controllers\FeedbackcheckController;
 
 class TextCheckController extends Controller
 {
     const TYPE_DEALFEEDBACK_COMMENT = 0;
+    const TYPE_DEALFEEDBACK_REPLY   = 1;
+    const TYPE_DEALFEEDBACK_HIGH    = 2;
 
     const CHECK_QUEUE_PROFIX = "checkqueue_";
-    public $config = [
-        self::TYPE_DEALFEEDBACK_COMMENT     => [
-                                                    'checkModel'    => 'app\models\FeedbackCommentToCheck',
-                                                    'prepareDate'   => ['app\controllers\FeedbackcheckController', 'prepareCheckDate'],
-                                                ],
+    public static $checkTypeConfig = [
+        self::TYPE_DEALFEEDBACK_COMMENT => [
+                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+                                           ],
+        self::TYPE_DEALFEEDBACK_REPLY   => [
+                                            'checkModel'        => 'app\models\FeedbackReplyToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareReplyData'],
+                                           ],
+        self::TYPE_DEALFEEDBACK_HIGH    => [
+                                            'checkModel'        => 'app\models\HqFeedbackToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareHighData'],
+                                           ],
     ];
 
     public static $instance;
-    private $preConfig;
+    private $typeConfig;
     private $redis;
 
     public static function getInstance($config)
     {
-        if (!isset(self::$instance[$config])) {
-            self::$instance[$config] = new self($config);
+        if (!isset(self::$checkTypeConfig[$config])) {
+            throw new Exception("error config");
         }
-        return self::$instance[$config];
+        if (!isset(self::$instances[$config])) {
+            self::$instances[$config] = new self($config);
+        }
+        return self::$instances[$config];
     }
 
     public function __construct($config)
     {
         $this->redis = Yii::$app->redis;
-        $this->preConfig = $config;
+        $this->typeConfig = $config;
     }
 
     public function getCheckQueue($status = 0)
@@ -68,16 +83,16 @@ class TextCheckController extends Controller
     public function getListForCheck($status = 0, $row = 20)
     {
         $ids = $this->getFromCheckQueue($status, $row);
-        $modelName = $this->config[$this->preConfig]['checkModel'];
+        $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
         $checkIds = [];
         foreach ($ids as $id) {
-            $tocheck = new FeedbackCommentToCheck($id);
+            $tocheck = new $checkModel($id);
             if ($tocheck->needManCheck()) {
                 $tocheck->putToRecycle($status);
                 $checkIds[] = $id;
             }
         }
-        call_user_func($this->config[$this->preConfig]['prepareDate'], $checkIds);
+        call_user_func(self::$checkTypeConfig[$this->typeConfig]['prepareCheckData']);
         return $checkIds;
     }
 }

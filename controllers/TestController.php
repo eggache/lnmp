@@ -39,4 +39,10 @@ class TestController extends Controller
         $controller = QueueController::getInstance(0);
         $controller->pushToQueue(1);
     }
+
+    public function actionCheckqueue()
+    {
+        $queue = QueueController::getInstance(0);
+        $queue->pushToQueue(1111);
+    }
 }

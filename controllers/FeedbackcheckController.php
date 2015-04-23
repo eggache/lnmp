@@ -16,8 +16,9 @@ class FeedbackcheckController extends Controller
 
     }
 
-    public function prepareCheckDate($checkObjs)
+    public function prepareCommentData()
     {
-        var_dump($checkObjs);
+        var_dump(1111);exit;
     }
+
 }
