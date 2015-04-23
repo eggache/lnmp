@@ -17,7 +17,6 @@ class TestController extends Controller
 
     public function actionDelredis()
     {
-        var_dump(22);exit;
         Yii::$app->redis->flushall();//删除redis中的所有数据
     }
 

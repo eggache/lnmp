@@ -6,7 +6,7 @@ use yii\web\Controller;
 
 class DealFeedbackController extends Controller
 {
-    public static function computeFeedbackWeight($userid, $orderid, $dealid, $comment, $score, $piccount = 0)
+    public static function computeFeedbackWeight($userid, $couponid, $dealid, $comment, $score, $piccount = 0)
     {
         // orderid 为0表示的是霸王餐项目的评分信息
         //if ($orderid == 0) {

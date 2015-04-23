@@ -10,9 +10,14 @@ class FeedbackcheckController extends Controller
 {
     public function actionIndex()
     {
-        $controller = TextCheckController::getInstance('check');
+        $type = TextCheckController::TYPE_DEALFEEDBACK_COMMENT;
+        $controller = TextCheckController::getInstance($type);
         $ret = $controller->getListForCheck(0);
 
     }
 
+    public function prepareCheckDate($checkObjs)
+    {
+        var_dump($checkObjs);
+    }
 }

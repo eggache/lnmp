@@ -10,7 +10,7 @@ use yii\widgets\ActiveForm;
 
 <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]) ?>
 
-    <?= Html::activeHiddenInput($feedback, 'orderid', ['value' => $orderid]) ?>
+    <?= Html::activeHiddenInput($feedback, 'couponid', ['value' => $couponid]) ?>
     <?= Html::activeHiddenInput($feedback, 'dealid', ['value' => $dealid]) ?>
     <?= Html::activeHiddenInput($feedback, 'userid', ['value' => $userid]) ?>
     <?= $form->field($feedback, 'score')->textInput(['value'   => 1]) ?>

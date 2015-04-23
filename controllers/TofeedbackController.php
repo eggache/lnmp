@@ -10,12 +10,13 @@ class TofeedbackController extends Controller
 {
     public function actionIndex()
     {
-        $coupons = Coupon::find()->where(['userid' => 2])->all();
+        $coupons = Coupon::find()->where(['userid' => 1])->all();
+        $feedbacklist = [];
         foreach ($coupons as $coupon) {
             $deal = Deal::find()->where(['id' => $coupon->dealid])->one();
             $feedbacklist[] = [
                 'dealid'    => $coupon->dealid,
-                'orderid'   => $coupon->id,
+                'couponid'  => $coupon->id,
                 'dealName'  => $deal->dealtitle,
                 'point'     => $deal->money,
                 'userid'    => $coupon->userid,

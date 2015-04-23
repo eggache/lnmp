@@ -32,14 +32,14 @@ class Dealfeedback extends \yii\db\ActiveRecord
     static $feedback = [
         'userid',
         'dealid',
-        'orderid',
+        'couponid',
         'score',
     ];
 
     static $bizreply = [
         'userid',
         'dealid',
-        'orderid',
+        'couponid',
         'score',
         'weight',
         'bizacctid',
@@ -58,8 +58,8 @@ class Dealfeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['userid', 'dealid', 'orderid'], 'required'],
-            [['userid', 'dealid', 'orderid', 'score', 'weight', 'bizacctid', 'addtime', 'apdaddtime', 'replytime', 'apdreplytime', 'modtime', 'attributes', 'status', 'commentid', 'replyid'], 'integer']
+            [['userid', 'dealid', 'couponid'], 'required'],
+            [['userid', 'dealid', 'couponid', 'score', 'weight', 'bizacctid', 'addtime', 'apdaddtime', 'replytime', 'apdreplytime', 'modtime', 'attributes', 'status', 'commentid', 'replyid'], 'integer']
         ];
     }
 
@@ -72,7 +72,7 @@ class Dealfeedback extends \yii\db\ActiveRecord
             'id' => 'ID',
             'userid' => 'Userid',
             'dealid' => 'Dealid',
-            'orderid' => 'Orderid',
+            'couponid' => 'Couponid',
             'score' => 'Score',
             'weight' => 'Weight',
             'bizacctid' => 'Bizacctid',
@@ -110,11 +110,12 @@ class Dealfeedback extends \yii\db\ActiveRecord
         $comment = new Feedbackcomment;
         $comment->comment = $arr['comment'];
         $comment->save();
-        $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->orderid, $obj->dealid, $comment->comment, $arr['has_pic']);
+        $obj->commentid = $comment->id;
+        $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->couponid, $obj->dealid, $comment->comment, $arr['has_pic']);
         $obj->weight = $weight[0];
         $obj->save();
 
-        $controller = TextCheckController::getInstance('check');
+        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_COMMENT);
         $controller->pushForCheck($obj->id, 0);
     }
 

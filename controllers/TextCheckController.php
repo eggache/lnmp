@@ -10,44 +10,54 @@ use app\models\FeedbackCommentToCheck;
 
 class TextCheckController extends Controller
 {
-    public $redis;
-    public $key;
     const TYPE_DEALFEEDBACK_COMMENT = 0;
 
+    const CHECK_QUEUE_PROFIX = "checkqueue_";
     public $config = [
         self::TYPE_DEALFEEDBACK_COMMENT     => [
                                                     'checkModel'    => 'app\models\FeedbackCommentToCheck',
+                                                    'prepareDate'   => ['app\controllers\FeedbackcheckController', 'prepareCheckDate'],
                                                 ],
     ];
 
-    public static $preConfig;
+    public static $instance;
+    private $preConfig;
+    private $redis;
 
-    public static function getInstance($config = 'check')
+    public static function getInstance($config)
     {
-        $obj = new static;
-        $obj->key = "text_{$config}";
-        return $obj;
+        if (!isset(self::$instance[$config])) {
+            self::$instance[$config] = new self($config);
+        }
+        return self::$instance[$config];
     }
 
-    public function __construct()
+    public function __construct($config)
     {
         $this->redis = Yii::$app->redis;
+        $this->preConfig = $config;
     }
 
-    public function getPreset()
+    public function getCheckQueue($status = 0)
     {
-        return [$this->redis, $this->key];
+        return self::CHECK_QUEUE_PROFIX . "{$status}";
     }
 
-    public function pushForCheck($id, $status)
+    public function getPreset($status = 0)
     {
-        list($redis, $key) = $this->getPreset();
+        $key = $this->getCheckQueue($status);
+        return [$this->redis, $key];
+    }
+
+    public function pushForCheck($id, $status = 0)
+    {
+        list($redis, $key) = $this->getPreset($status);
         $redis->zadd($key, $id, $id);
     }
 
-    public function getFromCheckQueue($status, $row = 20)
+    public function getFromCheckQueue($status = 0, $row = 20)
     {
-        list($redis, $key) = $this->getPreset();
+        list($redis, $key) = $this->getPreset($status);
         $redis->multi();
         $redis->zrange($key, 0, $row);
         //$redis->ZREMRANGEBYRANK($key, 0, $row);
@@ -55,9 +65,10 @@ class TextCheckController extends Controller
         return $ret[0];
     }
 
-    public function getListForCheck($status, $row = 20)
+    public function getListForCheck($status = 0, $row = 20)
     {
         $ids = $this->getFromCheckQueue($status, $row);
+        $modelName = $this->config[$this->preConfig]['checkModel'];
         $checkIds = [];
         foreach ($ids as $id) {
             $tocheck = new FeedbackCommentToCheck($id);
@@ -66,7 +77,7 @@ class TextCheckController extends Controller
                 $checkIds[] = $id;
             }
         }
-        call_user_func($modelName, $prepareFunc);
+        call_user_func($this->config[$this->preConfig]['prepareDate'], $checkIds);
         return $checkIds;
     }
 }
