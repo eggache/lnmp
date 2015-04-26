@@ -7,9 +7,10 @@ use Yii;
 /**
  * This is the model class for table "coupon".
  *
- * @property string $id
- * @property string $userid
- * @property string $dealid
+ * @property integer $id
+ * @property integer $userid
+ * @property integer $dealid
+ * @property integer $status
  */
 class Coupon extends \yii\db\ActiveRecord
 {
@@ -27,7 +28,7 @@ class Coupon extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['userid', 'dealid'], 'integer']
+            [['userid', 'dealid', 'status'], 'integer']
         ];
     }
 
@@ -40,6 +41,7 @@ class Coupon extends \yii\db\ActiveRecord
             'id' => 'ID',
             'userid' => 'Userid',
             'dealid' => 'Dealid',
+            'status' => 'Status',
         ];
     }
 }

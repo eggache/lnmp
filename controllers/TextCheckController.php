@@ -32,7 +32,7 @@ class TextCheckController extends Controller
                                            ],
     ];
 
-    public static $instance;
+    public static $instances;
     private $typeConfig;
     private $redis;
 

@@ -7,12 +7,6 @@ class TestController extends Controller
 {
     public function actionIndex()
     {
-        $picredis = new PicRedis;
-        $pic = PicRedis::find()->all();
-        foreach ($pic as $value) {
-            var_dump($value->attributes);
-        }
-        exit;
     }
 
     public function actionDelredis()
@@ -44,5 +38,23 @@ class TestController extends Controller
     {
         $queue = QueueController::getInstance(0);
         $queue->pushToQueue(1111);
+    }
+
+    public function actionTrie()
+    {
+        $controller = TrieController::getInstance(3);
+        //$controller->trieTest();
+        $matches = $controller->search('不要脸真的已经到了无以复加的地步！');
+        var_dump($matches);
+    }
+
+    public function actionShowpicredis()
+    {
+        $picredis = new PicRedis;
+        $pic = PicRedis::find()->all();
+        foreach ($pic as $value) {
+            var_dump($value->id);
+        }
+        exit;
     }
 }

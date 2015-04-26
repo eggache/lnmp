@@ -18,7 +18,8 @@ class FeedbackController extends Controller
         $picform = new PicForm;
         if ($request->isPost) {
             $feedback = $request->post()['FeedbackForm'];
-            //$picids = PicfeedbackController::storeImage();
+            $picids = PicfeedbackController::storeInRedis();
+            $comment = $feedback['comment'];
             $feedbackid = Dealfeedback::add($feedback);
             var_dump("insert is ok");exit;
         } else {
@@ -37,19 +38,21 @@ class FeedbackController extends Controller
 
     public function actionList()
     {
-        $dealid = 1;
+        $dealid = Yii::$app->request->get('dealid', 1);
         $deal = Deal::find()->where(['id' => $dealid])->one();
         $title = $deal['dealtitle'];
         $coupons = Coupon::find()->where(['dealid' => $dealid])->all();
+        var_dump(count($coupons));exit;
         $list = [];
         foreach ($coupons as $coupon) {
             $feedback = Dealfeedback::find()
                 ->where(['couponid' => $coupon['id']])
                 ->one();
-            var_dump($feedback);exit;
             $list[] = [
+                'dealid'    => $dealid,
                 'couponid'  => $coupon['id'],
                 'userid'    => $coupon['userid'],
+                'comment'   => $feedback->getComment(),
             ];
         }
 

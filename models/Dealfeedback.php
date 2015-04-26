@@ -5,6 +5,8 @@ namespace app\models;
 use Yii;
 use app\controllers\DealFeedbackController;
 use app\controllers\TextCheckController;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 use app\models\Feedbackcomment;
 
 /**
@@ -93,6 +95,13 @@ class Dealfeedback extends \yii\db\ActiveRecord
         return true;
     }
 
+    public function getComment()
+    {
+        return Feedbackcomment::find()
+            ->where(['id' => $this->commentid])
+            ->one()['comment'];
+    }
+
     public static function add($arr)
     {
         foreach (self::$feedback as $key) {
@@ -114,9 +123,25 @@ class Dealfeedback extends \yii\db\ActiveRecord
         $weight = DealFeedbackController::computeFeedbackWeight($obj->userid, $obj->couponid, $obj->dealid, $comment->comment, $arr['has_pic']);
         $obj->weight = $weight[0];
         $obj->save();
+        $coupon = Coupon::find()->where(['id' => $obj->couponid])->one();
+        $coupon->status = true;
+        $coupon->update();
 
         $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_COMMENT);
         $controller->pushForCheck($obj->id, 0);
+    }
+
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class'      => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['addtime', 'modtime'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE => ['modtime'],
+                ],
+            ],
+        ];
     }
 
     public static function getDealFeedbackById($id)

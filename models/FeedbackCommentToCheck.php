@@ -12,7 +12,6 @@ class FeedbackCommentToCheck implements TextToCheckIf
 
     public function __construct($id = 0)
     {
-        $this->textCheck();
         if ($id) {
             $this->feedback = Dealfeedback::getDealFeedbackById($id);
         } else {
@@ -46,14 +45,19 @@ class FeedbackCommentToCheck implements TextToCheckIf
 
     }
 
+    public function getComment()
+    {
+        return $this->feedback->getComment();
+    }
+
     public function textCheck()
     {
-        $comment = "买 了 个 表，，，色情，   你  ，， ╮(╯_╰)╭妹。。。大保健";
+        $comment = $this->getComment();
         $typeList = [Keywords::TYPE_BISHA, Keywords::TYPE_XIANFAHOUSHEN, Keywords::TYPE_ZANGHUA];
         foreach ($typeList as $type) {
             $keywords = KeywordsCheckController::hasKeyWords($type, $comment);
             $ret[$type] = $keywords;
         }
-        var_dump($ret);exit;
+
     }
 }
