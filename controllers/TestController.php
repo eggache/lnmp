@@ -7,6 +7,12 @@ class TestController extends Controller
 {
     public function actionIndex()
     {
+        $redis = Yii::$app->get('redis');
+        $ret = $redis->lrange('pic_redis', 0, -1);
+        foreach ($ret as $n => $k) {
+            $out = $redis->HGETALL('pic_redis:a:'. $k);
+        }
+        var_dump($out[0]);exit;
     }
 
     public function actionDelredis()
@@ -53,7 +59,7 @@ class TestController extends Controller
         $picredis = new PicRedis;
         $pic = PicRedis::find()->all();
         foreach ($pic as $value) {
-            var_dump($value->id);
+            var_dump($value->file);exit;
         }
         exit;
     }
