@@ -58,6 +58,7 @@ class TestController extends Controller
     {
         $picredis = new PicRedis;
         $pic = PicRedis::find()->all();
+        var_dump(count($pic));exit;
         foreach ($pic as $value) {
             var_dump($value->file);exit;
         }

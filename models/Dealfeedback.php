@@ -129,6 +129,7 @@ class Dealfeedback extends \yii\db\ActiveRecord
 
         $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_COMMENT);
         $controller->pushForCheck($obj->id, 0);
+        return $obj->id;
     }
 
     public function behaviors()

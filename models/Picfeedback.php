@@ -3,26 +3,27 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
+use app\controllers\PictureCheckController;
 
 /**
  * This is the model class for table "picfeedback".
  *
- * @property string $id
+ * @property integer $id
  * @property integer $userid
  * @property integer $dealid
- * @property string $orderid
- * @property integer $category
- * @property string $url
- * @property string $imagepath
- * @property string $title
+ * @property integer $couponid
  * @property integer $addtime
  * @property integer $modtime
  * @property string $attributes
  * @property integer $status
+ * @property string $imagename
  */
 class Picfeedback extends \yii\db\ActiveRecord
 {
+    private $checkqueue = "image_mac_check";
+
     /**
      * @inheritdoc
      */
@@ -37,9 +38,9 @@ class Picfeedback extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['userid', 'dealid', 'orderid', 'category'], 'required'],
-            [['userid', 'dealid', 'orderid', 'category', 'addtime', 'modtime', 'attributes', 'status'], 'integer'],
-            [['url', 'imagepath', 'title'], 'string', 'max' => 512]
+            [['userid', 'dealid', 'couponid', 'imagename'], 'required'],
+            [['userid', 'dealid', 'couponid', 'addtime', 'modtime', 'attributes', 'status'], 'integer'],
+            [['imagename'], 'string', 'max' => 512]
         ];
     }
 
@@ -52,28 +53,38 @@ class Picfeedback extends \yii\db\ActiveRecord
             'id' => 'ID',
             'userid' => 'Userid',
             'dealid' => 'Dealid',
-            'orderid' => 'Orderid',
-            'category' => 'Category',
-            'url' => 'Url',
-            'imagepath' => 'Imagepath',
-            'title' => 'Title',
+            'couponid' => 'Couponid',
             'addtime' => 'Addtime',
             'modtime' => 'Modtime',
             'attributes' => 'Attributes',
             'status' => 'Status',
+            'imagename' => 'Imagename',
         ];
     }
 
     public function behaviors()
-    {
+	{
         return [
             'timestamp' => [
-                'class'      => TimestampBehavior::className(),
+                'class'     => TimestampBehavior::className(),
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['addtime', 'modtime'],
                     ActiveRecord::EVENT_BEFORE_UPDATE => ['modtime'],
                 ],
             ],
         ];
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        $redis = Yii::$app->get('redis');
+        $name = explode('.', $this->imagename);
+        $name = $name[0];
+        $json = json_encode([
+            'id'        => $this->id,
+            'imagename' => $name,
+        ]);
+        $redis->zadd($this->checkqueue, $this->id, $json);
     }
 }

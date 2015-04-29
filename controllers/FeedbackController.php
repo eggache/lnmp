@@ -18,9 +18,9 @@ class FeedbackController extends Controller
         $picform = new PicForm;
         if ($request->isPost) {
             $feedback = $request->post()['FeedbackForm'];
-            $picids = PicfeedbackController::storeInRedis();
             $comment = $feedback['comment'];
             $feedbackid = Dealfeedback::add($feedback);
+            $picids = PicfeedbackController::storeInRedis($feedbackid);
             var_dump("insert is ok");exit;
         } else {
             $couponid = $request->get('couponid', 0);
