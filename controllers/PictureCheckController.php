@@ -39,15 +39,6 @@ class PictureCheckController extends Controller
         $this->redis = Yii::$app->redis;
     }
 
-    public function checkUniqueImage($hash)
-    {
-        $unique = $this->redis->sismember(self::IMAGE_HASH, $hash);
-        if ($unique) {
-            return false;
-        }
-        $this->redis->sadd(self::IMAGE_HASH, $hash);
-    }
-
     public function insertToRedis($image)
     {
         $pic = new PicRedis;

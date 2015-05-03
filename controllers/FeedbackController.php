@@ -8,6 +8,7 @@ use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\Coupon;
 use app\models\Deal;
+use app\controllers\PicfeedbackController;
 
 class FeedbackController extends Controller
 {

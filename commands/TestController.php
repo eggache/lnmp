@@ -8,12 +8,14 @@ class TestController extends Controller
 {
     public function actionIndex()
     {
-        $controller = TextCheckController::getInstance('check');
-        while(true) {
-            for($i = 1; $i < 21; $i ++) {
-                $controller->pushForCheck($i, 0);
-            }
-            sleep(2);
+        $compositeWand = NewMagickWand();
+        $watermarkimage = "/usr/share/nginx/html/lnmp/web/watermark.jpg";
+        $ret = file_exists($watermarkimage);
+        if (!MagickReadImage($compositeWand, $watermarkimage)) {
+            var_dump($ret ,$watermarkimage);exit;
+            MagickDeconstructImages($compositeWand);
+            return $sourceWand;
         }
+        var_dump("image is ok");exit;
     }
 }
