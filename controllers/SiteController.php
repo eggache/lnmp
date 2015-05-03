@@ -8,8 +8,6 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
-use app\models\UploadForm;
-use yii\web\UploadedFile;
 
 class SiteController extends Controller
 {
@@ -94,19 +92,5 @@ class SiteController extends Controller
     public function actionAbout()
     {
         return $this->render('about');
-    }
-
-    public function actionUpload()
-    {
-        $model = new UploadForm();
-        if (Yii::$app->request->isPost) {
-            $model->file = UploadedFile::getInstance($model, 'file');
-
-            if ($model->file && $model->validate()) {                
-                $model->file->saveAs('uploads/' . $model->file->baseName . '.' . $model->file->extension);
-            }
-        }
-
-        return $this->render('upload', ['model' => $model]);
     }
 }
