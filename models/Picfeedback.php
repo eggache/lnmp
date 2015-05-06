@@ -22,6 +22,16 @@ use app\controllers\PictureCheckController;
  */
 class Picfeedback extends \yii\db\ActiveRecord
 {
+    const ATTR_MAC_CHECKED  = 0;
+    const ATTR_MAN_CHECKED  = 1;
+    const ATTR_CHECK_PASS   = 2;
+    const ATTR_CHECK_BAN    = 3;
+
+    public function __construct()
+    {
+        $this->on('afterInsert', [$this, 'afterInsert']);
+    }
+
     private $checkqueue = "image_mac_check";
 
     /**
@@ -75,9 +85,21 @@ class Picfeedback extends \yii\db\ActiveRecord
         ];
     }
 
-    public function afterSave($insert, $changedAttributes)
+    //public function afterSave($insert, $changedAttributes)
+    //{
+    //    parent::afterSave($insert, $changedAttributes);
+    //    $redis = Yii::$app->get('redis');
+    //    $name = explode('.', $this->imagename);
+    //    $name = $name[0];
+    //    $json = json_encode([
+    //        'id'        => $this->id,
+    //        'imagename' => $name,
+    //    ]);
+    //    $redis->zadd($this->checkqueue, $this->id, $json);
+    //}
+
+    public function afterInsert()
     {
-        parent::afterSave($insert, $changedAttributes);
         $redis = Yii::$app->get('redis');
         $name = explode('.', $this->imagename);
         $name = $name[0];
@@ -86,5 +108,36 @@ class Picfeedback extends \yii\db\ActiveRecord
             'imagename' => $name,
         ]);
         $redis->zadd($this->checkqueue, $this->id, $json);
+    }
+
+    public function setCheckStatus($checkperson, $status)
+    {
+        if ($checkperson) {
+            $this->setAttr(self::ATTR_MAN_CHECKED, 1);
+        } else {
+            $this->setAttr(self::ATTR_MAC_CHECKED, 1);
+        }
+
+        if ($status == PictureCheckController::STATUS_PASS) {
+            $this->setAttr(self::ATTR_CHECK_PASS, 1);
+            $this->setAttr(self::ATTR_CHECK_BAN, 0);
+        } else {
+            $this->setAttr(self::ATTR_CHECK_PASS, 0);
+            $this->setAttr(self::ATTR_CHECK_BAN, 1);
+        }
+        $this->update();
+    }
+
+    public function getAttr($attr)
+    {
+        $value = 1 << $attr;
+        return $value & $this->attributes;
+    }
+
+    public function setAttr($attr)
+    {
+        $value = 1 << $attr;
+        $this->attributes |= $value;
+        $this->update();
     }
 }

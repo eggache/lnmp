@@ -11,7 +11,7 @@ use app\models\Dealfeedback;
 
 class PicfeedbackController extends Controller
 {
-    const WATER_MARK = '/web/watermark.jpg';
+    const WATER_MARK = '/usr/share/nginx/html/lnmp/web/watermark.png';
 
     public function __construct()
     {
@@ -48,18 +48,15 @@ class PicfeedbackController extends Controller
             'watermark' => self::WATER_MARK,
             'removeProfile' => false,
 		];
-        $img->resizeImage($tempName, $resizeParams);
-        $file = file_get_contents($pic->tempName);
-        $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_MAC);
-        $ret = $controller->checkUniqueImage(md5($file));
-        if ($ret == 'exist') {
-            return 'picture exist';
+        $ret = $img->resizeImage($tempName, $resizeParams);
+        if (strlen($ret) != 32) {
+            var_dump($ret);
+            exit;
         }
-        $imageName = $controller->insertToRedis($file, $pic->extension);
         $feedback = Dealfeedback::find()->where(['id' => $feedbackid])->one();
         $transaction = Yii::$app->db->beginTransaction();
         $picfeedback = new Picfeedback;
-        $picfeedback->imagename = $imageName . '.' . $pic->extension;
+        $picfeedback->imagename = $ret . '.' . $pic->extension;
         $picfeedback->userid = $feedback->userid;
         $picfeedback->dealid = $feedback->dealid;
         $picfeedback->couponid = $feedback->couponid;

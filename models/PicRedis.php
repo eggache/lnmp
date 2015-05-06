@@ -10,4 +10,12 @@ class PicRedis extends ActiveRecord
         return ['id', 'file'];
     }
 
+    public static function add($name, $file)
+    {
+        $obj = new self;
+        $obj->id = $name;
+        $obj->file = $file;
+        $obj->save();
+    }
+
 }
