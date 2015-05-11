@@ -7,12 +7,18 @@ use app\models\PicRedis;
 
 class PictureCheckController extends Controller
 {
+    //图片审核状态
+    const STATUS_NEW    = 0;
+    const STATUS_PASS   = 1;
+    const STATUS_BAN    = 2;
+
     public static $instances;
     const CHECK_QUEUE_PROFIX = "picfeedback_";
     const TYPE_PICFEEDBACK_MAC  = 0;
     
     private $typeConfig;
     private $redis;
+    public static $errorCodes = [0 => '机器审核错误', 1 => '机器通过', 2 => '美团logo', 5 => '禁止图片相似', 6 => '大众点评logo'];
     public static $checkTypeConfig = [
         self::TYPE_PICFEEDBACK_MAC      => [
                                             'checkModel'        => 'app\models\FeedbackCommentToCheck',
@@ -37,15 +43,6 @@ class PictureCheckController extends Controller
     {
         $this->typeConfig = $config;
         $this->redis = Yii::$app->redis;
-    }
-
-    public function insertToRedis($image)
-    {
-        $pic = new PicRedis;
-        $pic->id = md5($image);
-        $pic->file = $image;
-        $pic->save();
-        return $pic->id;
     }
 
     public function getCheckQueue($status = 0)

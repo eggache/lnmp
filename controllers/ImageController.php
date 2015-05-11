@@ -4,9 +4,11 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use app\models\PicRedis;
 
 class ImageController extends Controller
 {
+    const UNIQUE_IMAGE = "unique_image";
     public $pictureExtToFormat = [
         'jpg' => 'JPEG',
         'jpeg'=> 'JPEG',
@@ -59,6 +61,13 @@ class ImageController extends Controller
             return $err;
         }
         $hash = md5($outputImgBlob);
+        $redis = Yii::$app->redis;
+        $ret = $redis->sismember(self::UNIQUE_IMAGE, $hash);
+        if ($ret) {
+            return "PHOTO_EXIST";
+        }
+        $redis->sadd(self::UNIQUE_IMAGE, $hash);
+        PicRedis::add($hash, $outputImgBlob);
         $desFile = "../image/" . $hash . "." . $conf['originalFormat'];
 
         //成功, 写入文件
@@ -68,7 +77,7 @@ class ImageController extends Controller
         if ($wroteBytes === false) {
             return 'PHOTO_RESIZE_FILE_WRITE_FAILED';
         }
-        return false;
+        return $hash;
     }
 
     /**

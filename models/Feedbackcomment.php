@@ -17,7 +17,7 @@ class Feedbackcomment extends ActiveRecord
 {
 
     public function __construct () {
-        $this->on('beforeInsert', [$this, 'beforeInsert']);
+        $this->on('afterInsert', [$this, 'beforeInsert']);
     }
     /**
      * @inheritdoc
