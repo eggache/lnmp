@@ -26,7 +26,7 @@ AppAsset::register($this);
     <div class="wrap">
         <?php
             NavBar::begin([
-                'brandLabel' => 'My Company',
+                'brandLabel' => '评价审核系统',
                 'brandUrl' => Yii::$app->homeUrl,
                 'options' => [
                     'class' => 'navbar-inverse navbar-fixed-top',
@@ -35,14 +35,11 @@ AppAsset::register($this);
             echo Nav::widget([
                 'options' => ['class' => 'navbar-nav navbar-right'],
                 'items' => [
-                    ['label' => 'Home', 'url' => ['/site/index']],
-                    ['label' => 'About', 'url' => ['/site/about']],
-                    ['label' => 'Contact', 'url' => ['/site/contact']],
-                    Yii::$app->user->isGuest ?
-                        ['label' => 'Login', 'url' => ['/site/login']] :
-                        ['label' => 'Logout (' . Yii::$app->user->identity->username . ')',
-                            'url' => ['/site/logout'],
-                            'linkOptions' => ['data-method' => 'post']],
+                    ['label' => '初审平台', 'url' => ['/picfeedback/check']],
+                    ['label' => '复审平台', 'url' => ['/picfeedback/review']],
+                    ['label' => '复核平台', 'url' => ['/picfeedback/confirm']],
+                    ['label' => '报表', 'url' => ['/feedback/stat']],
+                    ['label' => '评价上传', 'url' => ['/tofeedback']],
                 ],
             ]);
             NavBar::end();

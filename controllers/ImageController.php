@@ -182,11 +182,9 @@ class ImageController extends Controller
         $compositeWand = NewMagickWand();
         $ret = file_exists($watermarkimage);
         if (!MagickReadImage($compositeWand, $watermarkimage)) {
-            var_dump($watermarkimage);exit;
             MagickDeconstructImages($compositeWand);
             return $sourceWand;
         }
-        var_dump("image is ok");exit;
         $width = MagickGetImageWidth($sourceWand);    
         $height = MagickGetImageHeight($sourceWand);
         $waterwidth =  MagickGetImageWidth($compositeWand);

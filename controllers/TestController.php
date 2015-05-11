@@ -48,9 +48,10 @@ class TestController extends Controller
 
     public function actionTrie()
     {
-        $controller = TrieController::getInstance(3);
+        $type = Yii::$app->request->get('type', 3);
+        $controller = TrieController::getInstance($type);
         //$controller->trieTest();
-        $matches = $controller->search('不要脸真的已经到了无以复加的地步！');
+        $matches = $controller->search('不要脸真的已经到了无以复加的luo聊表演！');
         var_dump($matches);
     }
 

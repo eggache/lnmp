@@ -2,20 +2,20 @@
 namespace app\commands;
 
 use yii\console\Controller;
+use app\models\Deal;
+use app\models\Coupon;
 use app\controllers\TextCheckController;
 
 class TestController extends Controller
 {
     public function actionIndex()
     {
-        $compositeWand = NewMagickWand();
-        $watermarkimage = "/usr/share/nginx/html/lnmp/web/watermark.jpg";
-        $ret = file_exists($watermarkimage);
-        if (!MagickReadImage($compositeWand, $watermarkimage)) {
-            var_dump($ret ,$watermarkimage);exit;
-            MagickDeconstructImages($compositeWand);
-            return $sourceWand;
+        $deals = Deal::find()->limit(100)->all();
+        foreach ($deals as $deal) {
+            $coupon = new Coupon;
+            $coupon->dealid = $deal->id;
+            $coupon->userid = 1;
+            $coupon->save();
         }
-        var_dump("image is ok");exit;
     }
 }

@@ -13,10 +13,6 @@ class PicfeedbackController extends Controller
 {
     const WATER_MARK = '/web/watermark.jpg';
 
-    public function __construct()
-    {
-    }
-
     public function actionUpload()
     {
         $model = new PicForm;
@@ -51,7 +47,7 @@ class PicfeedbackController extends Controller
         $img->resizeImage($tempName, $resizeParams);
         $file = file_get_contents($pic->tempName);
         $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_MAC);
-        $ret = $controller->checkUniqueImage(md5($file));
+        //$ret = $controller->checkUniqueImage(md5($file));
         if ($ret == 'exist') {
             return 'picture exist';
         }
@@ -70,6 +66,28 @@ class PicfeedbackController extends Controller
     public function storeImage()
     {
 
+    }
+
+    public function actionCheck()
+    {
+        return $this->render('check');
+    }
+
+    public function actionHis()
+    {
+        $list = [1,2,3];
+        $userlist = [
+            1   => '张茂强',
+            2   => '路人甲',
+            3   => '匪兵乙',
+        ];
+        $checkperson = Yii::$app->request->get('checkperson', 0);
+        return $this->render('his', [
+            'list'          => $list,
+            'userlist'      => $userlist,
+            'checkperson'   => $checkperson,
+            'url'           => Yii::$app->request->url,
+        ]);
     }
 
 }

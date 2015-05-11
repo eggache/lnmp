@@ -36,7 +36,7 @@ class TrieController extends Controller
 
     public function __construct($dict)
     {
-        $keywords = Keywords::find()->where(['type' => self::$dictConfig[$dict]])->all();
+        $keywords = Keywords::find()->where(['type' => self::$dictConfig[$dict]])->limit(10000)->all();
         foreach ($keywords as &$keyword) {
             $keyword = $keyword['raw'];
         }
@@ -69,6 +69,11 @@ class TrieController extends Controller
             }
         }
         return $trie;
+    }
+
+    public function findWord($text)
+    {
+    
     }
 
     public function createDobuleArray($words)
@@ -113,7 +118,7 @@ class TrieController extends Controller
                 }
                 if ($ret == true) {
                     $base[$p] = $flag ? -$i : $i;
-                    $flag && $this->trie[$p] = $value['word'];
+                    $flag && $this->trie[$p] = isset($value['word']) ? $value['word'] : '';
                     foreach ($index as $k => $j) {
                         $check[$i + $j] = $p;
                         $basePos[$k] = $i + $j;

@@ -7,7 +7,7 @@ use Yii;
 /**
  * This is the model class for table "deal".
  *
- * @property string $id
+ * @property integer $id
  * @property string $dealtitle
  * @property integer $money
  * @property integer $totalfeedback
@@ -30,7 +30,7 @@ class Deal extends \yii\db\ActiveRecord
     {
         return [
             [['money', 'totalfeedback', 'totalsale'], 'integer'],
-            [['dealtitle'], 'string', 'max' => 20]
+            [['dealtitle'], 'string', 'max' => 512]
         ];
     }
 
