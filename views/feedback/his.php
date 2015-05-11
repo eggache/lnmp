@@ -1,3 +1,6 @@
+<?php
+use app\controllers\TextCheckController;
+?>
 <html>
 <head>
 
@@ -54,6 +57,51 @@ function changebg(id)
         <li class="active"><a href="/feedback/his">文字历史</a></li>
     </ul>
 </div>
+<form method="get" action="<?= $url ?>">
+    <div class="row">
+        <div class="span1"> 
+            <label style="text-align:center; margin-top:5px; float:right;">审核人:</label>
+        </div>
+        <div class="span2">
+            <select style="max-width:100px;">
+            <?php
+                $selected = isset($checkperson) && $checkperson ? "" : 'selected="selected"';
+                echo '<option '. $selected . 'value = "0">人工审核</option>';
+                foreach($userlist as $id => $name) {
+                    $selected = isset($checkperson) && $checkperson == $id;
+                    $selected = $selected ? 'selected="selected"' : "";
+                    echo '<option '. $selected . 'value="'.$id.'">'.$name.'</option>';
+                }    
+            ?>
+            </select>
+        </div>
+        <div class="span1">
+            <label style="text-align:center; margin-top:5px; float:right;">开始时间:</label>
+        </div>
+        <div class="span2">
+            <div id="begintime" class="input-append date">
+                <input type="text" name="begintime" style="max-width:125px; height:30px;"></input>
+                <span class="add-on" style="height:30px;">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+        </div>
+        <div class="span1">
+            <label style="text-align:center; margin-top:5px; float:right;">结束时间:</label>
+        </div>
+        <div class="span2">
+            <div id="endtime" class="input-append date">
+                <input type="text" name="endtime" style="max-width:125px; height:30px;"></input>
+                <span class="add-on" style="height:30px;">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+        </div>
+        <div class="span1">
+            <input class="btn" type="submit" value="查询"/>
+        </div>
+    </div>
+</form>
 <table class="table table-hover">
     <thead>
         <tr>
@@ -69,12 +117,16 @@ function changebg(id)
 <?php
     foreach ($list as $value) {
         extract($value);
+        $pass = $status == TextCheckController::STATUS_PASS ? true : false;
+        $bg = $pass ? "#fff" : "#ffe4e5";
+        $status = $pass ? "审核通过" : "审核禁止";
+        $person = isset($userlist[$checkperson]) ? $userlist[$checkperson] : "机器审核";
         $html = '<tr><td style="text-align: center;">'.$id.'</td>'.
-                '<td>'.$title.'</td>'.
+                '<td style="background:'.$bg.'">'.$comment.'</td>'.
                 '<td style="text-align: center;">'.$score.'</td>'.
-                '<td onclick="changebg('.$id.')" id="td'.$id.'">'.$comment.'<input type="hidden" value="pass" id="input'.$id.'"/></td>'.
-                '<td style="text-align: center;">'.$keyword.'</td>'.
-                '<td style="text-align: center;">'.date('Y-m-d H:i:s',$addtime).'</td></tr>';
+                '<td style="text-align: center;">'.$status.'</td>'.
+                '<td style="text-align: center;">'.$person.'</td>'.
+                '<td style="text-align: center;">'.date('Y-m-d H:i:s',$checktime).'</td></tr>';
         echo $html;
     }?>
     </tbody>

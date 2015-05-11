@@ -31,6 +31,7 @@ class PicfeedbackController extends Controller
         $request = Yii::$app->request;
         $model = new PicRedis;
         $pic = UploadedFile::getInstanceByName("pic");
+        if (empty($pic)) return;
         $img = new ImageController;
         $tempName = $pic->tempName;
         $format = isset($img->pictureExtToFormat[$pic->extension]) ? $img->pictureExtToFormat[$pic->extension] : null;

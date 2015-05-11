@@ -29,6 +29,9 @@ class PicFeedbackToCheck implements PictureToCheckIf
     public function machineCheck($status, $reason)
     {
         $check = new Picfeedbackcheck;
+        if (empty($this->feedback)) {
+            return ;
+        }
         $check->picfeedbackid = $this->feedback->id;
         $check->couponid = $this->feedback->couponid;
         $check->oldstatus = 0;

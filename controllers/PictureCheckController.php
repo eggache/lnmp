@@ -15,11 +15,22 @@ class PictureCheckController extends Controller
     public static $instances;
     const CHECK_QUEUE_PROFIX = "picfeedback_";
     const TYPE_PICFEEDBACK_MAC  = 0;
+    const TYPE_PICFEEDBACK_MAN  = 1;
+    const TYPE_PICFEEDBACK_REV  = 1;
+    const TYPE_PICFEEDBACK_CON  = 1;
     
     private $typeConfig;
     private $redis;
     public static $errorCodes = [0 => '机器审核错误', 1 => '机器通过', 2 => '美团logo', 5 => '禁止图片相似', 6 => '大众点评logo'];
     public static $checkTypeConfig = [
+        self::TYPE_PICFEEDBACK_MAC      => [
+                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+                                           ],
+        self::TYPE_PICFEEDBACK_MAC      => [
+                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+                                           ],
         self::TYPE_PICFEEDBACK_MAC      => [
                                             'checkModel'        => 'app\models\FeedbackCommentToCheck',
                                             'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],

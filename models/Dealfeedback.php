@@ -31,6 +31,11 @@ use app\models\Feedbackcomment;
  */
 class Dealfeedback extends \yii\db\ActiveRecord
 {
+    const ATTR_MAC_CHECKED  = 0;
+    const ATTR_MAN_CHECKED  = 1;
+    const ATTR_CHECK_PASS   = 2;
+    const ATTR_CHECK_BAN    = 3;
+    const ATTR_REVIEWED     = 4;
     static $feedback = [
         'userid',
         'dealid',
@@ -92,14 +97,13 @@ class Dealfeedback extends \yii\db\ActiveRecord
 
     public function needManCheck()
     {
-        return true;
+        return !$this->getAttr(self::ATTR_MAN_CHECKED);
     }
 
     public function getComment()
     {
-        return Feedbackcomment::find()
-            ->where(['id' => $this->commentid])
-            ->one()['comment'];
+        $comment = Feedbackcomment::findOne($this->commentid);
+        return $comment->comment;
     }
 
     public static function add($arr)
@@ -151,4 +155,16 @@ class Dealfeedback extends \yii\db\ActiveRecord
         return $dealfeedback;
     }
 
+    public function getAttr($attr)
+    {
+        $value = 1 << $attr;
+        return $value & $this->attributes;
+    }
+
+    public function setAttr($attr, $value)
+    {
+        $attr = 1 << $attr;
+        $this->attributes = $value ? $this->attributes|$attr : $this->attributes^$attr;
+        $this->update();
+    }
 }

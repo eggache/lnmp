@@ -3,10 +3,13 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use yii\data\Pagination;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\Feedbackcomment;
+use app\models\Feedbackcheck;
+use app\models\ToCheck;
 use app\models\Coupon;
 use app\models\Deal;
 use app\controllers\PicfeedbackController;
@@ -23,7 +26,7 @@ class FeedbackController extends Controller
             $comment = $feedback['comment'];
             $feedbackid = Dealfeedback::add($feedback);
             $picids = PicfeedbackController::storeInRedis($feedbackid);
-            var_dump("insert is ok");exit;
+            return $this->redirect('/tofeedback');
         } else {
             $couponid = $request->get('couponid', 0);
             $dealid = $request->get('dealid', 0);
@@ -71,18 +74,53 @@ class FeedbackController extends Controller
 
     public function actionCheck()
     {
-        $feedback = Dealfeedback::find()->limit(10)->all();
         $list = [];
-        foreach ($feedback as $fb) {
-            $list[] = [
-                'id'        => $fb->id,
-                'title'     => Deal::findOne($fb->dealid)->dealtitle,
-                'score'     => $fb->score,
-                'addtime'   => $fb->addtime,
-                'comment'   => Feedbackcomment::findOne($fb->commentid)->comment,
-                'keyword'   => '',
-            ];
+        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_CHECK);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('check');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? TextCheckController::STATUS_PASS : TextCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
         }
+        $list = $controller->getListForCheck();
+        return $this->render('check', [
+                'list'  => $list,
+            ]);
+    }
+
+    public function actionReview()
+    {
+        $list = [];
+        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_REVIEW);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('check');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? TextCheckController::STATUS_PASS : TextCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
+        }
+        $list = $controller->getListForCheck();
+        return $this->render('check', [
+                'list'  => $list,
+            ]);
+    }
+
+    public function actionConfirm()
+    {
+        $list = [];
+        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_CONFIRM);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('check');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? TextCheckController::STATUS_PASS : TextCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
+        }
+        $list = $controller->getListForCheck();
         return $this->render('check', [
                 'list'  => $list,
             ]);
@@ -116,10 +154,42 @@ class FeedbackController extends Controller
 
     public function actionHis()
     {
+        $userlist = [
+            1   => '张茂强',
+            2   => '路人甲',
+            3   => '匪兵乙',
+        ];
         $list = [];
+        $checkperson = Yii::$app->request->get('checkperson', 0);
+
+        $query = Feedbackcheck::find();
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count()]);
+        $models = $query->offset($pages->offset)
+            ->limit($pages->limit)
+            ->all();
+
+        foreach ($models as $model) {
+            $feedback = Dealfeedback::findOne($model->dealfeedbackid);
+            if (empty($feedback)) {
+                continue;
+            }
+            $list[] =[
+                'id'            => $model->dealfeedbackid,
+                'score'         => $feedback->score,
+                'comment'       => $feedback->getComment(),
+                'checktime'     => $model->checktime,
+                'status'        => $model->status,
+                'checkperson'   => $model->checkperson,
+            ];
+        }
         return $this->render('his', [
-                'list'  => $list,
-            ]);
+            'list'          => $list,
+            'userlist'      => $userlist,
+            'checkperson'   => $checkperson,
+            'url'           => Yii::$app->request->url,
+            'pages' => $pages,
+        ]);
     }
 
 }   

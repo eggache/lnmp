@@ -7,28 +7,37 @@ use yii\web\Controller;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
-use app\models\FeedbackCommentToCheck;
+use app\models\TextToCheck;
 use app\controllers\FeedbackcheckController;
 
 class TextCheckController extends Controller
 {
     const TYPE_DEALFEEDBACK_COMMENT = 0;
-    const TYPE_DEALFEEDBACK_REPLY   = 1;
-    const TYPE_DEALFEEDBACK_HIGH    = 2;
+    const TYPE_DEALFEEDBACK_CHECK   = 1;
+    const TYPE_DEALFEEDBACK_REVIEW  = 2;
+    const TYPE_DEALFEEDBACK_CONFIRM = 3;
+
+    const STATUS_NEW    = 0;
+    const STATUS_PASS   = 1;
+    const STATUS_BAN    = 2;
 
     const CHECK_QUEUE_PROFIX = "checkqueue_";
     public static $checkTypeConfig = [
         self::TYPE_DEALFEEDBACK_COMMENT => [
-                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
+                                            'checkModel'        => '\app\models\TextToCheck',
                                             'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
                                            ],
-        self::TYPE_DEALFEEDBACK_REPLY   => [
-                                            'checkModel'        => 'app\models\FeedbackReplyToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareReplyData'],
+        self::TYPE_DEALFEEDBACK_CHECK   => [
+                                            'checkModel'        => '\app\models\TextToCheck',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
                                            ],
-        self::TYPE_DEALFEEDBACK_HIGH    => [
-                                            'checkModel'        => 'app\models\HqFeedbackToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareHighData'],
+        self::TYPE_DEALFEEDBACK_REVIEW  => [
+                                            'checkModel'        => '\app\models\TextToReview',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
+                                           ],
+        self::TYPE_DEALFEEDBACK_CONFIRM => [
+                                            'checkModel'        => '\app\models\TextToConfirm',
+                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
                                            ],
     ];
 
@@ -55,7 +64,7 @@ class TextCheckController extends Controller
 
     public function getCheckQueue($status = 0)
     {
-        return self::CHECK_QUEUE_PROFIX . "{$status}";
+        return self::CHECK_QUEUE_PROFIX . $this->typeConfig . "_{$status}";
     }
 
     public function getPreset($status = 0)
@@ -75,7 +84,7 @@ class TextCheckController extends Controller
         list($redis, $key) = $this->getPreset($status);
         $redis->multi();
         $redis->zrange($key, 0, $row);
-        //$redis->ZREMRANGEBYRANK($key, 0, $row);
+        $redis->ZREMRANGEBYRANK($key, 0, $row);
         $ret = $redis->exec();
         return $ret[0];
     }
@@ -92,7 +101,16 @@ class TextCheckController extends Controller
                 $checkIds[] = $id;
             }
         }
-        call_user_func(self::$checkTypeConfig[$this->typeConfig]['prepareCheckData']);
-        return $checkIds;
+        $ret = call_user_func(self::$checkTypeConfig[$this->typeConfig]['prepareCheckData'], $checkIds);
+        return $ret;
+    }
+
+    public function multiSetStatus($checkperson, $multiStatus)
+    {
+        foreach($multiStatus as $id => $status) {
+            $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
+            $tocheck = new $checkModel($id);
+            $tocheck->setCheckStatus($checkperson, $status);
+        }
     }
 }
