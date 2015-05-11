@@ -11,15 +11,7 @@ use app\models\Dealfeedback;
 
 class PicfeedbackController extends Controller
 {
-<<<<<<< HEAD
     const WATER_MARK = '/web/watermark.jpg';
-=======
-    const WATER_MARK = '/usr/share/nginx/html/lnmp/web/watermark.png';
-
-    public function __construct()
-    {
-    }
->>>>>>> ebaf6f0d756b122f3130fdb5d498de7323aa1c9c
 
     public function actionUpload()
     {
