@@ -4,6 +4,7 @@ namespace app\controllers;
 use Yii;
 use yii\web\Controller;
 use app\models\PicRedis;
+use app\controllers\DataProcessController;
 
 class PictureCheckController extends Controller
 {
@@ -15,25 +16,29 @@ class PictureCheckController extends Controller
     public static $instances;
     const CHECK_QUEUE_PROFIX = "picfeedback_";
     const TYPE_PICFEEDBACK_MAC  = 0;
-    const TYPE_PICFEEDBACK_MAN  = 1;
-    const TYPE_PICFEEDBACK_REV  = 1;
-    const TYPE_PICFEEDBACK_CON  = 1;
+    const TYPE_PICFEEDBACK_CHE  = 1;
+    const TYPE_PICFEEDBACK_REV  = 2;
+    const TYPE_PICFEEDBACK_CON  = 3;
     
     private $typeConfig;
     private $redis;
     public static $errorCodes = [0 => '机器审核错误', 1 => '机器通过', 2 => '美团logo', 5 => '禁止图片相似', 6 => '大众点评logo'];
     public static $checkTypeConfig = [
         self::TYPE_PICFEEDBACK_MAC      => [
-                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+                                            'checkModel'        => '\app\models\PicToCheck',
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'preparePicCheckData'],
                                            ],
-        self::TYPE_PICFEEDBACK_MAC      => [
-                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+        self::TYPE_PICFEEDBACK_CHE      => [
+                                            'checkModel'        => '\app\models\PicToCheck',
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'preparePicCheckData'],
                                            ],
-        self::TYPE_PICFEEDBACK_MAC      => [
-                                            'checkModel'        => 'app\models\FeedbackCommentToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+        self::TYPE_PICFEEDBACK_REV      => [
+                                            'checkModel'        => '\app\models\PicToReview',
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'preparePicCheckData'],
+                                           ],
+        self::TYPE_PICFEEDBACK_CON      => [
+                                            'checkModel'        => '\app\models\PicToConfirm',
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'prepareCheckData'],
                                            ],
         
     ];
@@ -95,8 +100,17 @@ class PictureCheckController extends Controller
                 $checkIds[] = $id;
             }
         }
-        call_user_func(self::$checkTypeConfig[$this->typeConfig]['prepareCheckData']);
-        return $checkIds;
+        $ret = call_user_func(self::$checkTypeConfig[$this->typeConfig]['prepareCheckData'], $checkIds);
+        return $ret;
+    }
+
+    public function multiSetStatus($checkperson, $multiStatus)
+    {
+        $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
+        foreach ($multiStatus as $id => $status) {
+            $model = new $checkModel($id);
+            $model->setCheckStatus($checkperson, $status);
+        }
     }
 
 }

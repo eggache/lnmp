@@ -10,7 +10,7 @@ use app\controllers\TextCheckController;
 class TextToConfirm implements TextToCheckIf
 {
     public $feedback;
-    public static $recycle = "text_to_confirm";
+    public static $recycle = "text_confirm";
 
     public function __construct($id = 0)
     {
@@ -32,7 +32,7 @@ class TextToConfirm implements TextToCheckIf
 
     public function needManCheck()
     {
-        return !empty($this->feedback) & $this->feedback->needManCheck();
+        return !empty($this->feedback) & !$this->feedback->getAttr(Dealfeedback::ATTR_CONFIRMED);
     }
 
     public function putToRecycle($status)

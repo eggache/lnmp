@@ -27,7 +27,8 @@ class RtcController extends Controller
     {
         $config = [
             '\app\models\TextToCheck'   => 'putForRecycle',
-            //'\app\models\TextToReview'  => 'putForRecycle',
+            '\app\models\TextToReview'  => 'putForRecycle',
+            '\app\models\TextToConfirm' => 'putForRecycle',
         ];
         $timeLimit = 0;     //minutes
         foreach($config as $className => $func) {

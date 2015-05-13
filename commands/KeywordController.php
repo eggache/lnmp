@@ -39,9 +39,11 @@ class KeywordController extends Controller
                 $keyword = $keyword['raw'];
             }
             $out = json_encode($keywords);
-            $fp = fopen($file, "w+");
+            $path = "/opt/dict/";
+            $fp = fopen($path.$file, "w+");
             fwrite($fp, $out);
             fclose($fp);
+            var_dump($file.'  '.count($keywords));
         }
         echo "ok";
     }

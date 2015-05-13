@@ -1,3 +1,6 @@
+<?php
+use app\controllers\PictureCheckController;
+?>
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -113,11 +116,15 @@ function changebg(id)
     <tbody>
 <?php
     foreach ($list as $value) {
-        //extract($value);
-        $html = '<tr><td style="text-align:center;"><img style="max-height: 500px; min-height: 300px;" class="img-rounded" src="/image/96427251c02c9390b2f28b9c1174ceab.jpg"></td>'.
-                '<td style="text-align: center;">'."aaaaa".'</td>'.
-                '<td style="text-align: center;">'."aaaaaaa".'</td>'.
-                '<td style="text-align: center;">'.date('Y-m-d H:i:s',time()).'</td></tr>';
+        extract($value);
+        $pass = $status == PictureCheckController::STATUS_PASS ? true : false;
+        $bg = $pass ? "#fff" : "#ffe4e5";
+        $status = $pass ? "审核通过" : "审核禁止";
+        $person = isset($userlist[$checkperson]) ? $userlist[$checkperson] : "机器审核";
+        $html = '<tr><td style="text-align:center; background:'.$bg.'"><img style="max-height: 500px; min-height: 300px;" class="img-rounded" src="'.$url.'"></td>'.
+                '<td style="text-align: center;">'.$status.'</td>'.
+                '<td style="text-align: center;">'.$person.'</td>'.
+                '<td style="text-align: center;">'.date('Y-m-d H:i:s',$checktime).'</td></tr>';
         echo $html;
     }?>
     </tbody>

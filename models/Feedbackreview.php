@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "feedbackreview".
@@ -53,5 +55,22 @@ class Feedbackreview extends \yii\db\ActiveRecord
             'attributes' => 'Attributes',
             'type' => 'Type',
         ];
+    }
+
+    public function behaviors()
+	{
+        return [
+            'timestamp' => [
+                'class'     => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['reviewtime'],
+                ],
+            ],
+        ];
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
     }
 }

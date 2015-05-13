@@ -8,7 +8,7 @@ use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\TextToCheck;
-use app\controllers\FeedbackcheckController;
+use app\controllers\DataProcessController;
 
 class TextCheckController extends Controller
 {
@@ -25,19 +25,19 @@ class TextCheckController extends Controller
     public static $checkTypeConfig = [
         self::TYPE_DEALFEEDBACK_COMMENT => [
                                             'checkModel'        => '\app\models\TextToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCommentData'],
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'prepareCommentData'],
                                            ],
         self::TYPE_DEALFEEDBACK_CHECK   => [
                                             'checkModel'        => '\app\models\TextToCheck',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'prepareCheckData'],
                                            ],
         self::TYPE_DEALFEEDBACK_REVIEW  => [
                                             'checkModel'        => '\app\models\TextToReview',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'prepareCheckData'],
                                            ],
         self::TYPE_DEALFEEDBACK_CONFIRM => [
                                             'checkModel'        => '\app\models\TextToConfirm',
-                                            'prepareCheckData'  => ['app\controllers\FeedbackcheckController', 'prepareCheckData'],
+                                            'prepareCheckData'  => ['app\controllers\DataProcessController', 'prepareCheckData'],
                                            ],
     ];
 
@@ -94,6 +94,7 @@ class TextCheckController extends Controller
         $ids = $this->getFromCheckQueue($status, $row);
         $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
         $checkIds = [];
+        $ids = [2,6,8];
         foreach ($ids as $id) {
             $tocheck = new $checkModel($id);
             if ($tocheck->needManCheck()) {

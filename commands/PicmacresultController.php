@@ -10,7 +10,7 @@ namespace app\commands;
 use Yii;
 use yii\console\Controller;
 use app\controllers\PictureCheckController;
-use app\models\PicFeedbackToCheck;
+use app\models\PicToCheck;
 
 /**
  * This command echoes the first argument that you have entered.
@@ -32,13 +32,17 @@ class PicmacresultController extends Controller
         $key = 'pic_mac_result';
         $redis->multi();
         $redis->zrange($key, 0, 10, "withscores");
-        //$redis->zremrangebyrank($key, 0, 10);
+        //$redis->zremrangebyrank($key, 0, 0);
         $objs = $redis->exec();
-        foreach ($objs as $obj) {
-            list($result, $id) = $obj;
+        $objs = empty($objs) ? [] : $objs[0];
+        $ret = [];
+        for ($i = 0; $i < count($objs); $i += 2) {
+            $ret[$objs[$i]] = $objs[$i+1];
+        }
+        foreach ($ret as $result => $id) {
             $reason = isset(PictureCheckController::$errorCodes[$result]) ? PictureCheckController::$errorCodes[$result] : 0;
             $reason = $result == 1 ? '' : $reason;
-            $tocheck = new PicFeedbackToCheck($id);
+            $tocheck = new PicToCheck($id);
             $status = $result <= 1 ? PictureCheckController::STATUS_PASS : PictureCheckController::STATUS_BAN;
             $tocheck->machineCheck($status, $reason);
         }

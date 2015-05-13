@@ -10,7 +10,7 @@ use app\controllers\TextCheckController;
 class TextToCheck implements TextToCheckIf
 {
     public $feedback;
-    public static $recycle = "text_to_check";
+    public static $recycle = "text_check";
 
     public function __construct($id = 0)
     {
@@ -28,10 +28,12 @@ class TextToCheck implements TextToCheckIf
 
     public function machineCheck()
     {
-        $reason = $this->textCheck();
         if (empty($this->feedback)) {
             return ;
         }
+        $result = $this->textCheck();
+        var_dump($result);
+        list($ban, $reason) = $result;
         $check = new Feedbackcheck;
         $check->oldstatus = 0;
         $check->status = empty($reason) ^ 1;
@@ -80,10 +82,15 @@ class TextToCheck implements TextToCheckIf
     public function textCheck()
     {
         $comment = $this->getComment();
-        $typeList = [Keywords::TYPE_BISHA, Keywords::TYPE_XIANFAHOUSHEN, Keywords::TYPE_ZANGHUA];
-        foreach ($typeList as $type) {
-            $keywords = KeywordsCheckController::hasKeyWords($type, $comment);
-            $ret[$type] = $keywords;
+        $comment = preg_replace('/\s/', '', $comment);
+        $cmd = "textcheck 1 " . $comment;
+        $ret  = system($cmd);
+        $matches = explode(" ", $ret);
+        var_dump("count of matches".count($matches));
+        if (count($matches) > 1) {
+            return $matches;
+        } else {
+            return [0, ""];
         }
     }
 

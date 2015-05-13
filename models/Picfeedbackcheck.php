@@ -3,13 +3,14 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "picfeedbackcheck".
  *
  * @property integer $id
  * @property integer $picfeedbackid
- * @property integer $couponid
  * @property integer $oldstatus
  * @property integer $status
  * @property integer $checkperson
@@ -32,8 +33,8 @@ class Picfeedbackcheck extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['picfeedbackid', 'couponid', 'oldstatus', 'status'], 'required'],
-            [['picfeedbackid', 'couponid', 'oldstatus', 'status', 'checkperson', 'checktime'], 'integer'],
+            [['picfeedbackid', 'oldstatus', 'status'], 'required'],
+            [['picfeedbackid', 'oldstatus', 'status', 'checkperson', 'checktime'], 'integer'],
             [['reason'], 'string', 'max' => 256]
         ];
     }
@@ -46,12 +47,28 @@ class Picfeedbackcheck extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'picfeedbackid' => 'Picfeedbackid',
-            'couponid' => 'Couponid',
             'oldstatus' => 'Oldstatus',
             'status' => 'Status',
             'checkperson' => 'Checkperson',
             'checktime' => 'Checktime',
             'reason' => 'Reason',
         ];
+    }
+
+    public function behaviors()
+	{
+        return [
+            'timestamp' => [
+                'class'     => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['checktime'],
+                ],
+            ],
+        ];
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
     }
 }

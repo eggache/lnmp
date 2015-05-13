@@ -10,7 +10,7 @@ use app\controllers\TextCheckController;
 class TextToReview implements TextToCheckIf
 {
     public $feedback;
-    public static $recycle = "text_to_review";
+    public static $recycle = "text_review";
 
     public function __construct($id = 0)
     {
@@ -41,22 +41,26 @@ class TextToReview implements TextToCheckIf
         $queue->pushToQueue($this->feedback->id);
     }
 
-    public function setCheckStatus($checkPerson, $status)
+    public function setCheckStatus($checkperson, $status)
     {
-        $check = new Feedbackcheck;
-        $check->oldstatus = 0;
-        $check->status = $status;
-        $check->dealfeedbackid = $this->feedback->id;
-        $check->checkperson = $checkPerson;
-        $check->save();
-        if (rand(1,100) > 2) {
-            $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_REVIEW);
+        $check = Feedbackcheck::findOne([
+            'dealfeedbackid' => $this->feedback->id, 
+            ['checkperson !=:person', ':person' => 0],
+        ]);
+        $review = new Feedbackreview;
+        $review->feedbackcheckid = $check->id;
+        $review->status = $status;
+        $review->reviewperson = $checkperson;
+        $review->type = 0;
+        $review->save();
+        if ($check->status != $review->status) {
+            $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_CONFIRM);
             $controller->pushForCheck($this->feedback->id);
+            $status = $status == TextCheckController::STATUS_PASS ? 1 : 0;
+            $this->feedback->setAttr(Dealfeedback::ATTR_REVIEWED, 1);
+            $this->feedback->setAttr(Dealfeedback::ATTR_CHECK_PASS, $status);
+            $this->feedback->setAttr(Dealfeedback::ATTR_CHECK_BAN, $status^1);
         }
-        $status = $status == TextCheckController::STATUS_PASS ? 1 : 0;
-        $this->feedback->setAttr(Dealfeedback::ATTR_MAN_CHECKED, 1);
-        $this->feedback->setAttr(Dealfeedback::ATTR_CHECK_PASS, $status);
-        $this->feedback->setAttr(Dealfeedback::ATTR_CHECK_BAN, $status^1);
     }
 
     public function getComment()
@@ -71,7 +75,7 @@ class TextToReview implements TextToCheckIf
         if (!$obj->needManCheck()) {
             return ;
         }
-        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_CHECK);
+        $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_REVIEW);
         $controller->pushForCheck($id);
     }
 }

@@ -3,11 +3,13 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use yii\data\Pagination;
 use app\models\PicForm;
 use app\models\PicRedis;
 use yii\web\UploadedFile;
 use app\models\Picfeedback;
 use app\models\Dealfeedback;
+use app\models\Picfeedbackcheck;
 
 class PicfeedbackController extends Controller
 {
@@ -53,7 +55,7 @@ class PicfeedbackController extends Controller
         $feedback = Dealfeedback::find()->where(['id' => $feedbackid])->one();
         $transaction = Yii::$app->db->beginTransaction();
         $picfeedback = new Picfeedback;
-        $picfeedback->imagename = $ret . '.' . $pic->extension;
+        $picfeedback->imagename = $ret . '.' . $img->pictureExtToFormat[$pic->extension];
         $picfeedback->userid = $feedback->userid;
         $picfeedback->dealid = $feedback->dealid;
         $picfeedback->couponid = $feedback->couponid;
@@ -68,23 +70,93 @@ class PicfeedbackController extends Controller
 
     public function actionCheck()
     {
-        return $this->render('check');
+        $list = [];
+        $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_CHE);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('pic');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? PictureCheckController::STATUS_PASS : PictureCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
+        }
+        $list = $controller->getListForCheck();
+        return $this->render('check', [
+                'list'  => $list,
+            ]);
+    }
+
+    public function actionReview()
+    {
+        $list = [];
+        $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_REV);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('pic');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? PictureCheckController::STATUS_PASS : PictureCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
+        }
+        $list = $controller->getListForCheck();
+        return $this->render('review', [
+                'list'  => $list,
+            ]);
+    }
+
+    public function actionConfirm()
+    {
+        $list = [];
+        $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_CON);
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $check = $request->post('pic');
+            foreach ($check as $id => &$status) {
+                $status = $status == 'pass' ? PictureCheckController::STATUS_PASS : PictureCheckController::STATUS_BAN; 
+            }
+            $controller->multiSetStatus(1, $check);
+        }
+        $list = $controller->getListForCheck();
+        return $this->render('confirm', [
+                'list'  => $list,
+            ]);
     }
 
     public function actionHis()
     {
-        $list = [1,2,3];
         $userlist = [
             1   => '张茂强',
             2   => '路人甲',
             3   => '匪兵乙',
         ];
+        $list = [];
         $checkperson = Yii::$app->request->get('checkperson', 0);
+
+        $query = Picfeedbackcheck::find();
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count()]);
+        $models = $query->offset($pages->offset)
+            ->limit($pages->limit)
+            ->all();
+        foreach ($models as $model) {
+            $feedback = Picfeedback::findOne($model->picfeedbackid);
+            if (empty($feedback)) {
+                continue;
+            }
+            $list[] =[
+                'id'            => $model->picfeedbackid,
+                'checktime'     => $model->checktime,
+                'status'        => $model->status,
+                'checkperson'   => $model->checkperson,
+                'url'           => "/image/" . $feedback->imagename,
+            ];
+        }
         return $this->render('his', [
             'list'          => $list,
             'userlist'      => $userlist,
             'checkperson'   => $checkperson,
             'url'           => Yii::$app->request->url,
+            'pages'         => $pages,
         ]);
     }
 

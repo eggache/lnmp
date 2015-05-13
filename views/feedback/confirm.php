@@ -57,8 +57,8 @@ function changebg(id)
 
 <div class="tabbable"> <!-- Only required for left/right tabs -->
     <ul class="nav nav-tabs">
-        <li><a href="/picfeedback/review">图片</a></li>
-        <li class="active"><a href="/feedback/review">文字</a></li>
+        <li><a href="/picfeedback/confirm">图片</a></li>
+        <li class="active"><a href="/feedback/confirm">文字</a></li>
     </ul>
 </div>
 <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]) ?>

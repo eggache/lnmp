@@ -26,6 +26,8 @@ class Picfeedback extends \yii\db\ActiveRecord
     const ATTR_MAN_CHECKED  = 1;
     const ATTR_CHECK_PASS   = 2;
     const ATTR_CHECK_BAN    = 3;
+    const ATTR_REVIEWED     = 4;
+    const ATTR_CONFIRMED    = 5;
 
     public function __construct()
     {

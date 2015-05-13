@@ -103,7 +103,7 @@ class FeedbackController extends Controller
             $controller->multiSetStatus(1, $check);
         }
         $list = $controller->getListForCheck();
-        return $this->render('check', [
+        return $this->render('review', [
                 'list'  => $list,
             ]);
     }
@@ -121,7 +121,7 @@ class FeedbackController extends Controller
             $controller->multiSetStatus(1, $check);
         }
         $list = $controller->getListForCheck();
-        return $this->render('check', [
+        return $this->render('confirm', [
                 'list'  => $list,
             ]);
     }
