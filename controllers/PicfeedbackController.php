@@ -13,7 +13,7 @@ use app\models\Picfeedbackcheck;
 
 class PicfeedbackController extends Controller
 {
-    const WATER_MARK = '/usr/share/nginx/html/lnmp/web/watermark.png';
+    const WATER_MARK = '/usr/share/nginx/html/lnmp/web/watermark.jpg';
 
     public function actionUpload()
     {

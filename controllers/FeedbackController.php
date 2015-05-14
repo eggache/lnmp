@@ -31,7 +31,7 @@ class FeedbackController extends Controller
                 var_dump("评价文字含有违规词语");
                 return;
             }
-//            $ret = DealFeedbackController::recentComment($comment);
+            $ret = DealFeedbackController::recentComment($comment);
             if ($ret) {
                 var_dump("重复评价禁止提交");
                 return;

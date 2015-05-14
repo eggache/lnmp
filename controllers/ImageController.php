@@ -64,7 +64,7 @@ class ImageController extends Controller
         $redis = Yii::$app->redis;
         $ret = $redis->sismember(self::UNIQUE_IMAGE, $hash);
         if ($ret) {
-            //return "PHOTO_EXIST";
+            return "PHOTO_EXIST";
         }
         $redis->sadd(self::UNIQUE_IMAGE, $hash);
         PicRedis::add($hash, $outputImgBlob);

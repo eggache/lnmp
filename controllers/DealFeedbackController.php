@@ -83,7 +83,7 @@ class DealFeedbackController extends Controller
                 $value[$i][$j] = $max;
             }
         }
-        return $value[$clen-1][$hlen-1]/$clen > 0.15;
+        return ($value[$clen-1][$hlen-1]/strlen($comment)) > 0.15;
     }
 	
     public static function computeFeedbackWeight($userid, $couponid, $dealid, $comment, $score, $piccount = 0)
