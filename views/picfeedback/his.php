@@ -1,4 +1,5 @@
 <?php
+use yii\widgets\LinkPager;
 use app\controllers\PictureCheckController;
 ?>
 <!DOCTYPE HTML>
@@ -129,6 +130,7 @@ function changebg(id)
     }?>
     </tbody>
 </table>
+<?= LinkPager::widget(['pagination' => $pages]) ?>
 </body>
 <script type="text/javascript"
     src="/date/jquery.min.js">

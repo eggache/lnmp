@@ -64,6 +64,7 @@ function changebg(id)
     </ul>
 </div>
 <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]) ?>
+    <input type='hidden' value=<?= time() ?> name="starttime" />
     <table class="table table-hover">
         <thead>
             <tr>

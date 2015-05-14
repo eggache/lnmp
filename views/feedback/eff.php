@@ -14,8 +14,8 @@
 
 <div class="tabbable"> <!-- Only required for left/right tabs -->
     <ul class="nav nav-tabs">
-        <li class="active"><a href="/feedback/stat?type=1">工作量报表</a></li>
-        <li><a href="/feedback/eff?type=3">效率报表</a></li>
+        <li><a href="/feedback/stat?type=1">工作量报表</a></li>
+        <li class="active"><a href="/feedback/eff?type=3">效率报表</a></li>
     </ul>
 </div>
 <form method="get" action="<?= $url ?>">
@@ -68,25 +68,25 @@
         <tr>
             <th style="width:10%; text-align: center;">审核人</th>
             <th style="width:10%; text-align: center;">图片审核量</th>
-            <th style="width:10%; text-align: center;">图片审核禁止率</th>
+            <th style="width:10%; text-align: center;">图片审核效率</th>
             <th style="width:10%; text-align: center;">文字审核量</th>
-            <th style="width:10%; text-align: center;">文字审核禁止率</th>
+            <th style="width:10%; text-align: center;">文字审核效率</th>
             <th style="width:10%; text-align: center;">审核总量</th>
-            <th style="width:10%; text-align: center;">审核禁止率</th>
+            <th style="width:10%; text-align: center;">审核效率</th>
         </tr>
     </thead>
         <?php
             foreach($list as $value) {
                 extract($value);
-                $picpercent = $piccnt ? number_format($picban*100/$piccnt, 2) : 0;
-                $textpercent = $textcnt ? number_format($textban*100/$textcnt, 2) : 0;
+                $picpercent = $piccnt ? number_format($pictime/$piccnt) : 0;
+                $textpercent = $textcnt ? number_format($texttime/$textcnt) : 0;
                 echo '<tr><td style="text-align: center;">'.$checkperson.'</td>',
                     '<td style="text-align: center;">'.$piccnt.'</td>',
-                    '<td style="text-align: center;">'.$picpercent.'%</td>';
+                    '<td style="text-align: center;">'.$picpercent.'/秒</td>';
                 echo '<td style="text-align: center;">'.$textcnt.'</td>',
-                    '<td style="text-align: center;">'.$textpercent.'%</td>';
+                    '<td style="text-align: center;">'.$textpercent.'/秒</td>';
                 echo '<td style="text-align: center;">'.($textcnt+$piccnt).'</td>',
-                    '<td style="text-align: center;">'.number_format(($textban+$picban)*100/($textcnt+$piccnt), 2).'%</td></tr>';
+                    '<td style="text-align: center;">'.number_format(($texttime+$pictime)/($textcnt+$piccnt), 2).'/秒</td></tr>';
             }
 ?>
     <tbody>

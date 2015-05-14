@@ -13,7 +13,7 @@ use app\models\Picfeedbackcheck;
 
 class PicfeedbackController extends Controller
 {
-    const WATER_MARK = '/web/watermark.jpg';
+    const WATER_MARK = '/usr/share/nginx/html/lnmp/web/watermark.png';
 
     public function actionUpload()
     {
@@ -63,22 +63,22 @@ class PicfeedbackController extends Controller
         $transaction->commit();
     }
 
-    public function storeImage()
-    {
-
-    }
-
     public function actionCheck()
     {
         $list = [];
         $controller = PictureCheckController::getInstance(PictureCheckController::TYPE_PICFEEDBACK_CHE);
         $request = Yii::$app->request;
         if ($request->isPost) {
-            $check = $request->post('pic');
+            $check = $request->post('pic', []);
             foreach ($check as $id => &$status) {
                 $status = $status == 'pass' ? PictureCheckController::STATUS_PASS : PictureCheckController::STATUS_BAN; 
             }
-            $controller->multiSetStatus(1, $check);
+            $eff['starttime'] = $request->post('starttime', 0);
+            if ($eff['starttime'] == 0) {
+                $controller->multiSetStatus(1, $check);
+            }
+            $eff['endtime'] = time();
+            $controller->multiSetStatus(1, $check, $eff);
         }
         $list = $controller->getListForCheck();
         return $this->render('check', [
@@ -135,6 +135,7 @@ class PicfeedbackController extends Controller
         $query = Picfeedbackcheck::find();
         $countQuery = clone $query;
         $pages = new Pagination(['totalCount' => $countQuery->count()]);
+        $pages->setPageSize(10);
         $models = $query->offset($pages->offset)
             ->limit($pages->limit)
             ->all();

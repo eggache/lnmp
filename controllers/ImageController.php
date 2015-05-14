@@ -64,7 +64,7 @@ class ImageController extends Controller
         $redis = Yii::$app->redis;
         $ret = $redis->sismember(self::UNIQUE_IMAGE, $hash);
         if ($ret) {
-            return "PHOTO_EXIST";
+            //return "PHOTO_EXIST";
         }
         $redis->sadd(self::UNIQUE_IMAGE, $hash);
         PicRedis::add($hash, $outputImgBlob);
@@ -182,31 +182,32 @@ class ImageController extends Controller
         return false;
     }
 
-    public static function addWatermark($sourceWand, $watermarkimage, $padding_right = 15, $padding_bottom = 15)
-    {
+    // 图片加水印,
+	public static function addWatermark($sourceWand, $watermarkimage, $padding_right = 15, $padding_bottom = 15)
+	{
         if (!file_exists($watermarkimage)) {
             return $sourceWand;
         }
-
+        
         $compositeWand = NewMagickWand();
-        $ret = file_exists($watermarkimage);
         if (!MagickReadImage($compositeWand, $watermarkimage)) {
             MagickDeconstructImages($compositeWand);
             return $sourceWand;
         }
-        $width = MagickGetImageWidth($sourceWand);    
+        $width = MagickGetImageWidth($sourceWand);
         $height = MagickGetImageHeight($sourceWand);
         $waterwidth =  MagickGetImageWidth($compositeWand);
         $waterheight =  MagickGetImageHeight($compositeWand);
-
+        
         $xoffset = $width - $waterwidth - $padding_right;
         $yoffset = $height - $waterheight - $padding_bottom;
         $xoffset = $xoffset > 0 ? $xoffset : 0;
         $yoffset = $yoffset > 0 ? $yoffset : 0;
-
+        
         //combining the images
-        MagickCompositeImage($sourceWand, $compositeWand, MW_ScreenCompositeOp, $xoffset, $yoffset);
+        $ret = MagickCompositeImage($sourceWand, $compositeWand, MW_ScreenCompositeOp, $xoffset, $yoffset);
         MagickDeconstructImages($compositeWand);
         return $sourceWand;
-    }
+	}
+    
 }

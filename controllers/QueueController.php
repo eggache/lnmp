@@ -8,6 +8,7 @@ class QueueController extends Controller
 {
     const TYPE_FEEDBACK_MAC = 0;
     const TYPE_FEEDBACK_MAN = 2;
+    const TYPE_FBCHECKSTAT  = 3;
 
     const PROFIX = "recyclequeue_";
     public static $instances;

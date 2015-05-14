@@ -4,6 +4,8 @@ namespace app\controllers;
 use Yii;
 use yii\web\Controller;
 use app\models\PicRedis;
+use app\models\Fbcheckeff;
+use app\models\Fbcheckstat;
 use app\controllers\DataProcessController;
 
 class PictureCheckController extends Controller
@@ -104,13 +106,62 @@ class PictureCheckController extends Controller
         return $ret;
     }
 
-    public function multiSetStatus($checkperson, $multiStatus)
+    public function multiSetStatus($checkperson, $multiStatus, $effinfo = [])
     {
         $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
+        $passcnt = 0;
         foreach ($multiStatus as $id => $status) {
             $model = new $checkModel($id);
+            if ($status == self::STATUS_PASS) {
+                $passcnt ++;
+            }
             $model->setCheckStatus($checkperson, $status);
         }
+
+        if (count($effinfo) > 1) {
+            $starttime = isset($effinfo['starttime']) ? $effinfo['starttime'] : 0;
+            $endtime = isset($effinfo['endtime']) ? $effinfo['endtime'] : 0;
+            $status = 0;
+            $cnt = count($multiStatus);
+            $this->calculate($checkperson, $starttime, $endtime, $passcnt, $cnt, $status);
+        }
+    }
+
+    public function calculate($checkperson, $starttime, $endtime, $pass, $cnt, $status)
+    {
+        // 效率
+        if ($endtime - $starttime > 1800 || $cnt == 0) {
+            return ;
+        }
+        $hour = date('YmdH');
+        $type = $this->typeConfig;
+        $cond = [
+            'hour'  => $hour,
+            'type'  => $type,
+            'checkperson'   => $checkperson,
+        ];
+        $eff = Fbcheckeff::find()->where($cond)->one();
+        if (empty($eff)) {
+            $eff = new Fbcheckeff;
+        }
+        $eff->hour = $hour;
+        $eff->type = $this->typeConfig;
+        $eff->cnt += intval($cnt);
+        $eff->checkperson = $checkperson;
+        $eff->usetime += $endtime - $starttime;
+        $eff->save();
+
+        //工作量
+        $arr = [
+            'checkperson'   => $checkperson,
+            'cnt'           => $cnt,
+            'type'          => $this->typeConfig,
+            'pass'          => $pass,
+            'hour'          => date('YmdH'),
+        ];
+        $controller = QueueController::getInstance(QueueController::TYPE_FBCHECKSTAT);
+        $json = json_encode($arr);
+        $controller->pushToQueue($json);
     }
 
 }

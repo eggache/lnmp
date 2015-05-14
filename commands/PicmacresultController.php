@@ -32,7 +32,7 @@ class PicmacresultController extends Controller
         $key = 'pic_mac_result';
         $redis->multi();
         $redis->zrange($key, 0, 10, "withscores");
-        //$redis->zremrangebyrank($key, 0, 0);
+        $redis->zremrangebyrank($key, 0, 0);
         $objs = $redis->exec();
         $objs = empty($objs) ? [] : $objs[0];
         $ret = [];

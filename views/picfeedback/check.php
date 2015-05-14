@@ -55,6 +55,7 @@ function changebg(id)
 <body>
 
 <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]) ?>
+    <input type='hidden' value=<?= time() ?> name="starttime" />
     <div class="tabbable"> <!-- Only required for left/right tabs -->
         <ul class="nav nav-tabs">
             <li class="active"><a href="/picfeedback/check">图片</a></li>

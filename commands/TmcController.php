@@ -15,7 +15,6 @@ class TmcController extends Controller
         $redis = Yii::$app->redis;
         $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_COMMENT);
         $list = $controller->getFromCheckQueue();
-        $list = [1];
         foreach ($list as $id) {
             $model = new TextToCheck($id);
             $model->machineCheck();

@@ -9,6 +9,8 @@ use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\Feedbackcomment;
 use app\models\Feedbackcheck;
+use app\models\Fbcheckstat;
+use app\models\Fbcheckeff;
 use app\models\ToCheck;
 use app\models\Coupon;
 use app\models\Deal;
@@ -29,7 +31,7 @@ class FeedbackController extends Controller
                 var_dump("评价文字含有违规词语");
                 return;
             }
-            $ret = DealFeedbackController::recentComment($comment);
+//            $ret = DealFeedbackController::recentComment($comment);
             if ($ret) {
                 var_dump("重复评价禁止提交");
                 return;
@@ -88,11 +90,16 @@ class FeedbackController extends Controller
         $controller = TextCheckController::getInstance(TextCheckController::TYPE_DEALFEEDBACK_CHECK);
         $request = Yii::$app->request;
         if ($request->isPost) {
-            $check = $request->post('check');
+            $check = $request->post('check', []);
             foreach ($check as $id => &$status) {
                 $status = $status == 'pass' ? TextCheckController::STATUS_PASS : TextCheckController::STATUS_BAN; 
             }
-            $controller->multiSetStatus(1, $check);
+            $eff['starttime'] = $request->post('starttime', 0);
+            if ($eff['starttime'] == 0) {
+                $controller->multiSetStatus(1, $check);
+            }
+            $eff['endtime'] = time();
+            $controller->multiSetStatus(1, $check, $eff);
         }
         $list = $controller->getListForCheck();
         return $this->render('check', [
@@ -138,23 +145,79 @@ class FeedbackController extends Controller
 
     public function actionStat()
     {
-        $list = [];
-        for($i = 0; $i < 10; $i ++) {
-            $list[] = [
-                'checkperson'   => '张茂强',
-                'textcnt'   => $cnt = rand(1,100),
-                'textban'   => rand(1,$cnt/10),
-                'piccnt'    => $cnt = rand(1,500),
-                'picban'    => rand(1, $cnt/10),
-            ];
-        }
+        $request = Yii::$app->request;
+        $starttime = $request->get('begintime', time());
+        $endtime = $request->get('endtime', time());
+        $start = date('YmdH', strtotime($starttime));
+        $end = date('YmdH', strtotime($endtime));
+        $cond = ['between', 'hour', $start, $end];
+        $arr = Fbcheckstat::find()->where($cond)->where(['type' => [1, 11], 'checkperson' => 1])->all();
         $userlist = [
             1   => '张茂强',
             2   => '路人甲',
             3   => '匪兵乙',
         ];
         $checkperson = Yii::$app->request->get('checkperson', 0);
+        $list = [];
+        foreach ($arr as $obj) {
+            $checkperson = $obj->checkperson;
+            if (!isset($list[$checkperson])) {
+                $list[$checkperson]['textcnt'] = 0;
+                $list[$checkperson]['textban'] = 0;
+                $list[$checkperson]['piccnt'] = 0;
+                $list[$checkperson]['picban'] = 0;
+            }
+            $list[$checkperson]['checkperson'] = $userlist[$checkperson];
+            if ($obj->type == 11) {
+                $list[$checkperson]['textcnt'] += $obj->totalcnt;
+                $list[$checkperson]['textban'] += $obj->totalcnt - $obj->passcnt;
+            } else {
+                $list[$checkperson]['piccnt'] += $obj->totalcnt;
+                $list[$checkperson]['picban'] += $obj->totalcnt - $obj->passcnt;
+            }
+        }
         return $this->render('stat', [
+            'list'          => $list,
+            'checkperson'   => $checkperson,
+            'userlist'      => $userlist,
+            'url'           => Yii::$app->request->url,
+        ]); 
+    }
+
+    public function actionEff()
+    {
+        $request = Yii::$app->request;
+        $starttime = $request->get('begintime', time());
+        $endtime = $request->get('endtime', time());
+        $start = date('YmdH', strtotime($starttime));
+        $end = date('YmdH', strtotime($endtime));
+        $cond = ['between', 'hour', $start, $end];
+        $arr = Fbcheckeff::find()->where($cond)->where(['type' => [1, 11], 'checkperson' => 1])->all();
+        $userlist = [
+            1   => '张茂强',
+            2   => '路人甲',
+            3   => '匪兵乙',
+        ];
+        $checkperson = Yii::$app->request->get('checkperson', 0);
+        $list = [];
+        foreach ($arr as $obj) {
+            $checkperson = $obj->checkperson;
+            if (!isset($list[$checkperson])) {
+                $list[$checkperson]['textcnt'] = 0;
+                $list[$checkperson]['texttime'] = 0;
+                $list[$checkperson]['piccnt'] = 0;
+                $list[$checkperson]['pictime'] = 0;
+            }
+            $list[$checkperson]['checkperson'] = $userlist[$checkperson];
+            if ($obj->type == 11) {
+                $list[$checkperson]['textcnt'] += $obj->cnt;
+                $list[$checkperson]['texttime'] += $obj->usetime;
+            } else {
+                $list[$checkperson]['piccnt'] += $obj->cnt;
+                $list[$checkperson]['pictime'] += $obj->usetime;
+            }
+        }
+        return $this->render('eff', [
             'list'          => $list,
             'checkperson'   => $checkperson,
             'userlist'      => $userlist,

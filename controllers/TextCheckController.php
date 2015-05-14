@@ -4,11 +4,13 @@ namespace app\controllers;
 use Yii;
 use yii\base\Exception;
 use yii\web\Controller;
+use app\models\Fbcheckeff;
 use app\models\PicForm;
 use app\models\FeedbackForm;
 use app\models\Dealfeedback;
 use app\models\TextToCheck;
 use app\controllers\DataProcessController;
+use app\controllers\QueueController;
 
 class TextCheckController extends Controller
 {
@@ -105,12 +107,62 @@ class TextCheckController extends Controller
         return $ret;
     }
 
-    public function multiSetStatus($checkperson, $multiStatus)
+    public function multiSetStatus($checkperson, $multiStatus, $effinfo = [])
     {
+        $passcnt = 0;
         foreach($multiStatus as $id => $status) {
             $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
             $tocheck = new $checkModel($id);
+            if ($status == self::STATUS_PASS) {
+                $passcnt ++;
+            }
             $tocheck->setCheckStatus($checkperson, $status);
         }
+
+        if (count($effinfo) > 1) {
+            $starttime = isset($effinfo['starttime']) ? $effinfo['starttime'] : 0;
+            $endtime = isset($effinfo['endtime']) ? $effinfo['endtime'] : 0;
+            $status = 0;
+            $cnt = count($multiStatus);
+            $this->calculate($checkperson, $starttime, $endtime, $passcnt, $cnt, $status);
+        }
     }
+
+    public function calculate($checkperson, $starttime, $endtime, $pass, $cnt, $status)
+    {
+        // 效率
+        if ($endtime - $starttime > 1800 || $cnt == 0) {
+            return ;
+        }
+        $hour = date('YmdH');
+        $type = 1 + 10 * $this->typeConfig;
+        $cond = [
+            'hour'  => $hour,
+            'type'  => $type,
+            'checkperson'   => $checkperson,
+        ];
+        $eff = Fbcheckeff::find()->where($cond)->one();
+        if (empty($eff)) {
+            $eff = new Fbcheckeff;
+        }
+        $eff->hour = $hour;
+        $eff->type = $type;
+        $eff->cnt += intval($cnt);
+        $eff->checkperson = $checkperson;
+        $eff->usetime += $endtime - $starttime;
+        $eff->save();
+
+        //工作量
+        $arr = [
+            'checkperson'   => $checkperson,
+            'cnt'           => $cnt,
+            'type'          => $type,
+            'pass'          => $pass,
+            'hour'          => date('YmdH'),
+        ];
+        $controller = QueueController::getInstance(QueueController::TYPE_FBCHECKSTAT);
+        $json = json_encode($arr);
+        $controller->pushToQueue($json);
+    }
+
 }
