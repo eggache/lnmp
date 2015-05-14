@@ -94,7 +94,6 @@ class TextCheckController extends Controller
         $ids = $this->getFromCheckQueue($status, $row);
         $checkModel = self::$checkTypeConfig[$this->typeConfig]['checkModel'];
         $checkIds = [];
-        $ids = [2,6,8];
         foreach ($ids as $id) {
             $tocheck = new $checkModel($id);
             if ($tocheck->needManCheck()) {

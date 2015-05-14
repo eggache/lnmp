@@ -24,6 +24,16 @@ class FeedbackController extends Controller
         if ($request->isPost) {
             $feedback = $request->post()['FeedbackForm'];
             $comment = $feedback['comment'];
+            $ret = DealFeedbackController::commentStyle($comment);
+            if ($ret) {
+                var_dump("评价文字含有违规词语");
+                return;
+            }
+            $ret = DealFeedbackController::recentComment($comment);
+            if ($ret) {
+                var_dump("重复评价禁止提交");
+                return;
+            }
             $feedbackid = Dealfeedback::add($feedback);
             $picids = PicfeedbackController::storeInRedis($feedbackid);
             return $this->redirect('/tofeedback');

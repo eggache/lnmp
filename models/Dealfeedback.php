@@ -37,6 +37,9 @@ class Dealfeedback extends \yii\db\ActiveRecord
     const ATTR_CHECK_BAN    = 3;
     const ATTR_REVIEWED     = 4;
     const ATTR_CONFIRMED    = 5;
+    const ATTR_FORBIDDEN    = 6;
+    const ATTR_HIDDEN       = 7;
+
     static $feedback = [
         'userid',
         'dealid',

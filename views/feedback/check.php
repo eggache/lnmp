@@ -79,6 +79,16 @@ function changebg(id)
     <?php
         foreach ($list as $value) {
             extract($value);
+            $keywords = explode(",", $keyword);
+            foreach ($keywords as $word) {
+                if (empty($word)) {
+                    continue; 
+                }
+                $pattern = "/" . $word . "/";
+                $replace = '<strong style="color: #b94a48">' . $word . "</strong>";
+                $format = preg_replace($pattern, $replace, $comment);
+                $comment = $format;
+            }
             $html = '<tr><td style="text-align: center;">'.$id.'</td>'.
                     '<td>'.$title.'</td>'.
                     '<td style="text-align: center;">'.$score.'</td>'.

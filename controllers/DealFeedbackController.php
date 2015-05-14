@@ -3,6 +3,7 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use app\models\Dealfeedback;
 
 class DealFeedbackController extends Controller
 {
@@ -14,6 +15,77 @@ class DealFeedbackController extends Controller
         }
     }
 
+	public static function commentStyle($comment)
+	{
+        // 检查用户输入评价内容是否含有关键词
+        $banwords = require('../config/banwords.php');
+        foreach ($banwords as $banword) {
+            if (mb_stripos($comment, $banword, 0, 'utf-8') !== false) {
+                return true;
+            }
+        }
+
+        $pattern = '/([a-zA-Z0-9]+\.)+([a-zA-Z0-9])+/u';
+        if (preg_match($pattern, $comment)) {
+            return true;
+        }
+        
+        // 连续标点符号多于等于6个，算凑字数
+        $pattern = '/[\pP]{6,}/u';
+        if (preg_match($pattern, $comment)) {
+            return true;
+        }
+        
+        // 连续英文字符多于等于15个，算凑字数
+        $pattern = '/[a-zA-Z\d]{15,}/u';
+        if (preg_match($pattern, $comment)) {
+            return true;
+        }
+        
+        //去重后中文字符占总中文字符1/3以下
+        $commentClean = preg_replace('/[\pPa-zA-Z0-9\s]+/u', '', $comment);
+        preg_match_all("/./u", $commentClean, $commentArr);
+        if (mb_strlen($commentClean, 'utf-8') > 3 * count(array_flip($commentArr[0]))) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    public static function recentComment($comment)
+    {
+        $feedback = Dealfeedback::find()->orderBy('addtime', 'desc')->limit(2)->all();
+        $comments = [];
+        foreach ($feedback as $fb) {
+            $ret = self::commentLCS($comment, $fb->getComment());
+            if ($ret) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function commentLCS($comment, $hiscmt)
+    {
+        $clen = mb_strlen($comment, 'utf-8');
+        $hlen = mb_strlen($hiscmt, 'utf-8');
+        $value = [];
+        for ($i = 0; $i < $clen; $i ++ ) {
+            $c_char = mb_substr($comment, $i, 1, 'utf-8');
+            for ($j = 0; $j < $hlen; $j ++) {
+                $h_char = mb_substr($hiscmt, $j, 1, 'utf-8');
+                $add = $c_char === $h_char ? 1 : 0;
+                $up = isset($value[$i-1][$j]) ? intval($value[$i-1][$j]) : 0;
+                $left = isset($value[$i][$j-1]) ? intval($value[$i][$j-1]) : 0;
+                $up_left = isset($value[$i-1][$j-1]) ? intval($value[$i-1][$j-1]) : 0;
+                $max = max($up, $left);
+                $max = max($max, $up_left + $add);
+                $value[$i][$j] = $max;
+            }
+        }
+        return $value[$clen-1][$hlen-1]/$clen > 0.15;
+    }
+	
     public static function computeFeedbackWeight($userid, $couponid, $dealid, $comment, $score, $piccount = 0)
     {
         // orderid 为0表示的是霸王餐项目的评分信息

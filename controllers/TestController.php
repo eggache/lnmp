@@ -65,4 +65,16 @@ class TestController extends Controller
         }
         exit;
     }
+
+    public function actionAjax()
+    {
+        return $this->render('ajax');
+    }
+
+    public function actionGet()
+    {
+        $json = ['ajax is ok'];
+        echo json_encode($json); 
+        return ;
+    }
 }

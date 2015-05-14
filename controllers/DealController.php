@@ -36,6 +36,7 @@ class DealController extends Controller
             ->all();
         $commentList = [];
         foreach ($models as $model) {
+            $hidden = $model->getAttr(Dealfeedback::ATTR_HIDDEN);
             $commentList[$model->commentid] = Feedbackcomment::findOne($model->commentid);
         }
         return $this->render('feedback', [

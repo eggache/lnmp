@@ -26,14 +26,39 @@ class TextToCheck implements TextToCheckIf
         return $this->feedback;
     }
 
+    public function hiddenkeyword($reason)
+    {
+        $keywords = explode(",", $reason);
+        $commentid = $this->feedback->commentid;
+        $feedbackcomment = Feedbackcomment::findOne($commentid);
+        $comment = $feedbackcomment->comment;
+        foreach($keywords as $keyword) {
+            if (empty($keyword)) {
+                continue;
+            }
+            $pattern = "/".$keyword."/";
+            $format = preg_replace($pattern, "**", $comment);
+            $comment = $format;
+        }
+        $feedbackcomment->format = $comment;
+        $feedbackcomment->update();
+        
+    }
+
     public function machineCheck()
     {
         if (empty($this->feedback)) {
             return ;
         }
         $result = $this->textCheck();
-        var_dump($result);
         list($ban, $reason) = $result;
+        if ($ban) {
+            $this->feedback->setAttr(Dealfeedback::ATTR_FORBIDDEN, 1);
+        }
+        if (!empty($reason)) {
+            $this->hiddenkeyword($reason);
+            $this->feedback->setAttr(Dealfeedback::ATTR_HIDDEN, 1);
+        }
         $check = new Feedbackcheck;
         $check->oldstatus = 0;
         $check->status = empty($reason) ^ 1;
@@ -46,7 +71,7 @@ class TextToCheck implements TextToCheckIf
 
     public function needManCheck()
     {
-        return !empty($this->feedback) & $this->feedback->needManCheck();
+        return !empty($this->feedback) && $this->feedback->needManCheck();
     }
 
     public function putToRecycle($status)
@@ -86,7 +111,6 @@ class TextToCheck implements TextToCheckIf
         $cmd = "textcheck 1 " . $comment;
         $ret  = system($cmd);
         $matches = explode(" ", $ret);
-        var_dump("count of matches".count($matches));
         if (count($matches) > 1) {
             return $matches;
         } else {
